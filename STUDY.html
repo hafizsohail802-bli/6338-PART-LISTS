@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Component Study & Quiz Platform</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f6f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #4458dc;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+    }
+    nav {
+      display: flex;
+      justify-content: center;
+      background: #eaeaea;
+      padding: 10px;
+    }
+    nav button {
+      margin: 0 10px;
+      padding: 10px 20px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 5px;
+      background: white;
+    }
+    nav button.active {
+      background: #4458dc;
+      color: white;
+    }
+    section {
+      display: none;
+      padding: 20px;
+    }
+    section.active {
+      display: block;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .card {
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 10px;
+      padding: 15px;
+      text-align: center;
+    }
+    .card img {
+      width: 100%;
+      height: 180px;
+      object-fit: contain;
+    }
+    .card h3 {
+      margin: 10px 0 5px;
+      color: #333;
+    }
+    .card p {
+      margin: 3px 0;
+      font-size: 0.9em;
+      color: #555;
+    }
+    .datasheet {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 8px 15px;
+      background: #4458dc;
+      color: white;
+      border-radius: 5px;
+      text-decoration: none;
+    }
+    .quiz-container {
+      text-align: center;
+      max-width: 800px;
+      margin: auto;
+    }
+    .quiz-question {
+      display: none;
+    }
+    .quiz-question.active {
+      display: block;
+    }
+    .option {
+      background: white;
+      border: 2px solid #ccc;
+      border-radius: 10px;
+      padding: 10px;
+      margin: 10px;
+      cursor: pointer;
+      display: inline-block;
+      width: 40%;
+    }
+    .option img {
+      width: 100%;
+      height: 120px;
+      object-fit: contain;
+    }
+    .option.correct {
+      border-color: #28a745;
+      background: #d4edda;
+    }
+    .option.incorrect {
+      border-color: #dc3545;
+      background: #f8d7da;
+    }
+    .next-btn {
+      background: #28a745;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>⚡ Component Study & Quiz</h1>
+    <p>Learn and Test Your Knowledge on Electrical Components</p>
+  </header>
+
+  <nav>
+    <button class="tab active" onclick="switchTab('study')">Study Components</button>
+    <button class="tab" onclick="switchTab('quiz')">Take Quiz</button>
+  </nav>
+
+  <!-- Study Section -->
+  <section id="study" class="active">
+    <h2>📘 Study Section</h2>
+    <input
+      type="text"
+      id="search"
+      placeholder="Search component by name or part number..."
+      style="width:100%;padding:10px;margin:20px 0;border-radius:5px;border:1px solid #ccc;"
+      onkeyup="filterComponents()"
+    />
+    <div id="componentGrid" class="grid"></div>
+  </section>
+
+  <!-- Quiz Section -->
+  <section id="quiz">
+    <div class="quiz-container">
+      <h2>🎯 Component Quiz</h2>
+      <div id="startScreen">
+        <p>Enter your name to start the quiz</p>
+        <input type="text" id="userName" placeholder="Your name" style="padding:10px;width:80%;border-radius:5px;border:1px solid #ccc;">
+        <br><br>
+        <button onclick="startQuiz()" class="next-btn">Start Quiz</button>
+      </div>
+      <div id="questionContainer"></div>
+      <div id="resultContainer" style="display:none;">
+        <h3 id="resultText"></h3>
+        <button onclick="restartQuiz()" class="next-btn">Try Again</button>
+      </div>
+    </div>
+  </section>
+
+  <script>
+    const components = [
+      { name: "SEL751 Relay", part: "SEL751", drawing: "0001, 0002, 0007, 0008", desc: "Protection relay for feeder applications", datasheetLink: "https://www.ien.eu/uploads/tx_etim/751_DS_20131101.pdf"},
+      { name: "MCB 25A 2P 6kA", part: "5SY62257CC", drawing: "0001, 0004, 0007", desc: "Miniature Circuit Breaker for protection", datasheetLink: "https://docs.rs-online.com/8fcd/A700000007224906.pdf"},
+      { name: "MCB 3A 3P 10kA", part: "5SY43037CC", drawing: "0001, 0004", desc: "Three-pole breaker for control circuits", datasheetLink: "https://asset.conrad.com/media10/add/160267/c1/-/nl/001728442DS00/datenblatt-1728442-siemens-5sy43037-5sy4303-7-leitungsschutzschalter-3-a-230-v-400-v.pdf"},
+      { name: "MCB 1A 3P 10kA", part: "5SY43017CC", drawing: "0001, 0004, 0007", desc: "Three-phase low-current protection", datasheetLink: "https://cd-solec.com/storage/produit/5SY4301-7/5SY4301-7.pdf"},
+      { name: "MCB 10A 2P 6kA", part: "5SY62107CC", drawing: "0001, 0004, 0007", desc: "Double-pole protection breaker", datasheetLink: "https://docs.rs-online.com/886d/A700000006610260.pdf"},
+      { name: "MCB 6A 2P 6kA", part: "5SY62067CC", drawing: "0001, 0002, 0004, 0007", desc: "Two-pole circuit breaker", datasheetLink: "https://docs.rs-online.com/1043/A700000006610256.pdf"},
+      { name: "MCB 16A 2P 6kA", part: "5SY62167CC", drawing: "0001, 0004, 0007", desc: "Two-pole MCB for general load", datasheetLink: "https://docs.rs-online.com/acb2/A700000006610268.pdf"},
+      { name: "MCB 6A 1P 6kA", part: "5SY61067CC", drawing: "0002, 0005", desc: "Single-pole breaker for lighting", datasheetLink: "https://docs.rs-online.com/e9bc/0900766b813dff85.pdf"},
+      { name: "MCB 2A 1P 6kA", part: "5SY61027CC", drawing: "0002, 0005, 0008", desc: "Small load single-pole breaker", datasheetLink: "https://docs.rs-online.com/d8f0/0900766b813dff69.pdf"},
+      { name: "Emergency Stop Push Button", part: "XB4BS8444", drawing: "0002, 0005", desc: "Schneider Harmony E-Stop Pushbutton", datasheetLink: "https://docs.rs-online.com/d721/A700000007335528.pdf"},
+      { name: "Selector Switch 3 Pos", part: "D7P-SB32", drawing: "0002, 0005, 0008", desc: "3-position selector switch", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10029/D7PSB32-AU-Selector-Switch-22mm-Datasheet.pdf"},
+      { name: "Contactor Relay 2NO+2NC", part: "3RH2122-1BB40", drawing: "0002, 0005, 0008", desc: "4-pole contactor relay", datasheetLink: "https://docs.rs-online.com/eb47/0900766b813eb119.pdf"},
+      { name: "Green Indicator Lamp", part: "D7P-LF3PN3GX10", drawing: "0003, 0006, 0009", desc: "Green push-to-test indicator", datasheetLink: "https://www.nhpnz.co.nz/public/assets/pim/Original/10029/D7PLF3PN3GX10-NZ-Pushbutton-22.5mm-Datasheet.pdf"},
+      { name: "Amber Indicator Lamp", part: "D7P-P0PN3AX7", drawing: "0003, 0006, 0009", desc: "Amber indicator for signaling", datasheetLink: "https://www.nhp.com.au/-/media/Project/NHP/Sites/Shared/Resources/Catalogues/Files/D7-Pushbuttons--Operator-Control-Devices.pdf"},
+      { name: "Red Indicator Lamp", part: "D7PP4PN3RXD7", drawing: "0003, 0006, 0009", desc: "Red push-to-test indicator", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10044/D7PP4PN3RXD7-AU-Pilot-Light-22.5mm-Datasheet.pdf"},
+      { name: "SEL735 Meter", part: "SEL735", drawing: "0003", desc: "Power quality and metering relay", datasheetLink: "https://zangagency.com/wp-content/uploads/2024/08/ZANG-Meters-SEL735-Type.pdf"},
+      { name: "Contactor Relay 3NO+1NC", part: "3RH2131-1BB40", drawing: "0003, 0006, 0008", desc: "3NO + 1NC contactor relay", datasheetLink: "https://docs.rs-online.com/1679/0900766b814b7c1a.pdf"},
+      { name: "Contactor Relay 4NO+4NC", part: "3RH2140-1BB40", drawing: "0003, 0006, 0008", desc: "4NO + 4NC contactor relay", datasheetLink: "https://docs.rs-online.com/e9b8/0900766b814b7c1d.pdf"},
+      { name: "SEL787 Relay", part: "SEL787", drawing: "0004, 0005", desc: "Transformer protection relay", datasheetLink: "https://www.pesin.com.ph/sites/default/files/product-file/787-3-4_ds_20170815.pdf"}
+    ];
+
+    function switchTab(tab) {
+      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
+      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
+      document.getElementById(tab).classList.add("active");
+      document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add("active");
+    }
+
+    function loadComponents() {
+      const grid = document.getElementById("componentGrid");
+      grid.innerHTML = "";
+      components.forEach(c => {
+        const imgPath = `images/${c.part}.jpg`;
+        const pdfPath = c.datasheetLink || `datasheets/${c.part}.pdf`;
+        grid.innerHTML += `
+          <div class="card">
+            <img src="${imgPath}" alt="${c.name}" onerror="this.src='images/placeholder.jpg'">
+            <h3>${c.name}</h3>
+            <p><strong>Part:</strong> ${c.part}</p>
+            <p><strong>Drawing:</strong> ${c.drawing}</p>
+            <p>${c.desc}</p>
+            <a class="datasheet" href="${pdfPath}" target="_blank">View Datasheet</a>
+          </div>
+        `;
+      });
+    }
+
+    function filterComponents() {
+      const val = document.getElementById("search").value.toLowerCase();
+      document.querySelectorAll(".card").forEach(card => {
+        card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
+      });
+    }
+
+    // Quiz Logic
+    let quiz = [], index = 0, score = 0, name = "";
+    function startQuiz() {
+      name = document.getElementById("userName").value.trim();
+      if (!name) { alert("Please enter your name"); return; }
+      quiz = [...components].sort(() => 0.5 - Math.random()).slice(0, 10);
+      index = 0; score = 0;
+      document.getElementById("startScreen").style.display = "none";
+      showQuestion();
+    }
+
+    function showQuestion() {
+      const q = quiz[index];
+      const opts = [...components].sort(() => 0.5 - Math.random()).slice(0, 4);
+      if (!opts.some(o => o.part === q.part)) opts[0] = q;
+      const container = document.getElementById("questionContainer");
+      container.innerHTML = `
+        <div class="quiz-question active">
+          <h3>Question ${index + 1} of ${quiz.length}</h3>
+          <p>Select the correct image for <b>${q.name}</b></p>
+          ${opts.map(o => `
+            <div class="option" onclick="checkAnswer(this,'${o.part}','${q.part}')">
+              <img src="images/${o.part}.jpg" alt="${o.name}" onerror="this.src='images/placeholder.jpg'">
+              <p>${o.part}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function checkAnswer(el, chosen, correct) {
+      const all = document.querySelectorAll(".option");
+      all.forEach(o => o.style.pointerEvents = "none");
+      if (chosen === correct) { el.classList.add("correct"); score++; }
+      else { el.classList.add("incorrect"); all.forEach(o => { if (o.innerText.includes(correct)) o.classList.add("correct"); }); }
+      if (index < quiz.length - 1) {
+        const btn = document.createElement("button");
+        btn.className = "next-btn";
+        btn.innerText = "Next";
+        btn.onclick = nextQuestion;
+        document.getElementById("questionContainer").appendChild(btn);
+      } else {
+        const btn = document.createElement("button");
+        btn.className = "next-btn";
+        btn.innerText = "Show Result";
+        btn.onclick = showResult;
+        document.getElementById("questionContainer").appendChild(btn);
+      }
+    }
+
+    function nextQuestion() { index++; showQuestion(); }
+    function showResult() {
+      document.getElementById("questionContainer").innerHTML = "";
+      document.getElementById("resultContainer").style.display = "block";
+      document.getElementById("resultText").innerText = `${name}, your score is ${score}/${quiz.length}`;
+    }
+    function restartQuiz() {
+      document.getElementById("resultContainer").style.display = "none";
+      document.getElementById("startScreen").style.display = "block";
+    }
+
+    loadComponents();
+  </script>
+</body>
+</html>
