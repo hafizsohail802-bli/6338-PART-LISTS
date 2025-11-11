@@ -1,288 +1,1071 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Component Study & Quiz Platform</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f6f8fa;
-      margin: 0;
-      padding: 0;
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Component Study & Quiz — Project 6338</title>
+<style>
+/* CSS is largely unchanged, just ensuring .text-answer class works for the select */
+:root{ --brand:#4458dc; --muted:#6c757d; --ok:#2d8a4a; --bad:#d64545; --card:#fff; }
+body{font-family:Arial, Helvetica, sans-serif;background:#f4f6fb;margin:0;color:#222;}
+header{
+    background:linear-gradient(90deg,var(--brand),#1b8bff);
+    color:white;
+    padding:18px 16px;
+    /* --- NEW FLEX ALIGNMENT --- */
+    display: flex;
+    flex-direction: column; /* Stack children vertically */
+    align-items: flex-start; /* Align all content to the far left */
+    gap: 5px; /* Reduced gap */
+    text-align: left; /* Ensure h1 and div text is left-aligned */
+}
+.header-logo {
+    /* Logo size increased to 60px */
+    height: 60px; 
+    border-radius: 5px;
+    margin-bottom: 5px; /* Space between logo and h1 */
+}
+header h1{
+    margin:0;
+    font-size:20px; 
+    margin-top: 5px; /* Smaller margin below logo */
+}
+nav{display:flex;gap:8px;justify-content:center;padding:12px;background:#eef2ff}
+nav button{border:0;background:white;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
+nav button.active{background:var(--brand);color:white}
+main{max-width:1200px;margin:18px auto;padding:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+/* MODIFIED: Reduced padding and removed internal gap for cleaner card look */
+.card{
+    background:var(--card);
+    border-radius:10px;
+    padding:12px; 
+    border:1px solid #e6e9f2;
+    display:flex;
+    flex-direction:column;
+    cursor:pointer; /* Indicate it's clickable */
+    transition: box-shadow 0.15s ease-in-out;
+}
+.card:hover{
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+.img-box{width:100%;height:160px;border-radius:8px;background:#fbfdff;border:1px dashed #e6eefc;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.img-box img{max-width:100%;max-height:100%;object-fit:contain;display:block}
+.img-box.empty{background:transparent}
+.meta{font-size:13px;color:var(--muted)}
+.datasheet{display:inline-block;margin-top:8px;padding:8px 10px;background:var(--brand);color:white;border-radius:6px;text-decoration:none;font-weight:700;
+/* Prevent click event from propagating to the parent card */
+z-index: 1000;
+position: relative; 
+}
+/* *** MODIFIED: Center Datasheet link *** */
+.datasheet-wrap{display: flex; justify-content: center;} /* To center the link */
+.search{width:100%;padding:10px;border-radius:8px;border:1px solid #dbe6ff;margin-bottom:12px}
+/* Quiz styles */
+.quiz-wrap{max-width:900px;margin:0 auto;background:white;padding:16px;border-radius:10px;border:1px solid #e6e9f2}
+.q-header{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.question-area{margin-top:14px}
+.question-image{width:100%;height:260px;border-radius:10px;background:#fbfdff;border:1px dashed #e6eefc;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.q-text{font-weight:700;font-size:1.05rem;margin-top:10px}
+.options{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:12px}
+.option{background:#fff;border:2px solid #e9eefc;padding:10px;border-radius:8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:8px;min-height:120px}
+.option img{max-width:100%;max-height:110px;object-fit:contain}
+.option.correct{outline:4px solid rgba(46,168,79,0.14);border-color:var(--ok)}
+.option.incorrect{outline:4px solid rgba(214,65,69,0.12);border-color:var(--bad)}
+.text-answer{width:100%;padding:10px;border-radius:8px;border:1px solid #dbe6ff}
+.btn{padding:10px 14px;border-radius:8px;border:0;background:var(--brand);color:white;font-weight:700;cursor:pointer}
+.small-muted{font-size:13px;color:var(--muted)}
+.progress{height:8px;background:#eef2ff;border-radius:8px;overflow:hidden;margin-top:10px}
+.progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),#1b8bff);width:0%}
+/* placeholder empty image visual (keeps space if file missing) */
+.missing-img{width:100%;height:100%;display:block;background:transparent}
+/* Login specific styles */
+.login-box{max-width:400px;margin:50px auto;padding:25px;background:white;border-radius:10px;border:1px solid #e6e9f2;text-align:center;}
+.login-input-group{margin-bottom:15px;text-align:left;}
+.login-input-group label{display:block;margin-bottom:5px;font-size:14px;}
+/* Apply styling to the new select element */
+.login-input-group #username.text-answer {
+    appearance: none; /* Removes default OS styling */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23000%22%20d%3D%22M287%2069.4L146.2%20208.7%205.4%2069.4h281.2z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+.login-input-group input,
+.login-input-group select {
+    width:100%;padding:10px;border-radius:8px;border:1px solid #dbe6ff;box-sizing:border-box;
+}
+.btn-choice{display:flex;gap:10px;justify-content:center;margin-bottom:15px;}
+.btn-choice button{flex-grow:1;}
+.log-entry{padding:8px;margin-bottom:5px;border-bottom:1px solid #eee;font-size:14px;text-align:left;word-break: break-word;}
+footer{margin:20px auto;text-align:center;color:var(--muted);font-size:13px}
+/* --- MODAL STYLES --- */
+.modal {
+    display: none; 
+    position: fixed; 
+    z-index: 10000; 
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4); 
+    padding-top: 60px;
+}
+.modal-content {
+    background-color: #fefefe;
+    margin: 5% auto; 
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%; 
+    max-width: 600px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-detail-img {
+    width: 100%;
+    height: 250px;
+    border-radius: 8px;
+    background: #fbfdff;
+    border: 1px dashed #e6eefc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 15px;
+}
+.modal-detail-img img{
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+.modal-detail-row {
+    margin-bottom: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+.modal-detail-label {
+    font-weight: 700;
+    display: inline-block;
+    width: 120px; /* Increased label width for new details */
+    color: var(--brand);
+    vertical-align: top;
+}
+.modal-detail-content {
+    display: inline-block;
+    width: calc(100% - 130px); /* Adjust width for content */
+    text-align: left;
+    white-space: pre-wrap; /* Preserve formatting for notes/specs */
+}
+/* ------------------------ */
+@media(max-width:600px){
+    .question-image{height:180px}
+    .img-box{height:120px}
+    .modal-detail-label {
+        width: 100%; /* Full width for smaller screens */
+        display: block;
+        margin-bottom: 3px;
     }
-    header {
-      background: #4458dc;
-      color: white;
-      text-align: center;
-      padding: 20px 0;
+    .modal-detail-content {
+        width: 100%;
+        display: block;
+        padding-left: 10px;
     }
-    nav {
-      display: flex;
-      justify-content: center;
-      background: #eaeaea;
-      padding: 10px;
-    }
-    nav button {
-      margin: 0 10px;
-      padding: 10px 20px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      border-radius: 5px;
-      background: white;
-    }
-    nav button.active {
-      background: #4458dc;
-      color: white;
-    }
-    section {
-      display: none;
-      padding: 20px;
-    }
-    section.active {
-      display: block;
-    }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 20px;
-    }
-    .card {
-      background: white;
-      border: 1px solid #ccc;
-      border-radius: 10px;
-      padding: 15px;
-      text-align: center;
-    }
-    .card img {
-      width: 100%;
-      height: 180px;
-      object-fit: contain;
-    }
-    .card h3 {
-      margin: 10px 0 5px;
-      color: #333;
-    }
-    .card p {
-      margin: 3px 0;
-      font-size: 0.9em;
-      color: #555;
-    }
-    .datasheet {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 8px 15px;
-      background: #4458dc;
-      color: white;
-      border-radius: 5px;
-      text-decoration: none;
-    }
-    .quiz-container {
-      text-align: center;
-      max-width: 800px;
-      margin: auto;
-    }
-    .quiz-question {
-      display: none;
-    }
-    .quiz-question.active {
-      display: block;
-    }
-    .option {
-      background: white;
-      border: 2px solid #ccc;
-      border-radius: 10px;
-      padding: 10px;
-      margin: 10px;
-      cursor: pointer;
-      display: inline-block;
-      width: 40%;
-    }
-    .option img {
-      width: 100%;
-      height: 120px;
-      object-fit: contain;
-    }
-    .option.correct {
-      border-color: #28a745;
-      background: #d4edda;
-    }
-    .option.incorrect {
-      border-color: #dc3545;
-      background: #f8d7da;
-    }
-    .next-btn {
-      background: #28a745;
-      color: white;
-      padding: 10px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-  </style>
+}
+</style>
 </head>
 <body>
-  <header>
-    <h1>⚡ Component Study & Quiz</h1>
-    <p>Learn and Test Your Knowledge on Electrical Components</p>
-  </header>
-
-  <nav>
-    <button class="tab active" onclick="switchTab('study')">Study Components</button>
-    <button class="tab" onclick="switchTab('quiz')">Take Quiz</button>
-  </nav>
-
-  <!-- Study Section -->
-  <section id="study" class="active">
-    <h2>📘 Study Section</h2>
-    <input
-      type="text"
-      id="search"
-      placeholder="Search component by name or part number..."
-      style="width:100%;padding:10px;margin:20px 0;border-radius:5px;border:1px solid #ccc;"
-      onkeyup="filterComponents()"
-    />
-    <div id="componentGrid" class="grid"></div>
-  </section>
-
-  <!-- Quiz Section -->
-  <section id="quiz">
-    <div class="quiz-container">
-      <h2>🎯 Component Quiz</h2>
-      <div id="startScreen">
-        <p>Enter your name to start the quiz</p>
-        <input type="text" id="userName" placeholder="Your name" style="padding:10px;width:80%;border-radius:5px;border:1px solid #ccc;">
-        <br><br>
-        <button onclick="startQuiz()" class="next-btn">Start Quiz</button>
-      </div>
-      <div id="questionContainer"></div>
-      <div id="resultContainer" style="display:none;">
-        <h3 id="resultText"></h3>
-        <button onclick="restartQuiz()" class="next-btn">Try Again</button>
-      </div>
-    </div>
-  </section>
-
-  <script>
-    const components = [
-      { name: "SEL751 Relay", part: "SEL751", drawing: "0001, 0002, 0007, 0008", desc: "Protection relay for feeder applications", datasheetLink: "https://www.ien.eu/uploads/tx_etim/751_DS_20131101.pdf"},
-      { name: "MCB 25A 2P 6kA", part: "5SY62257CC", drawing: "0001, 0004, 0007", desc: "Miniature Circuit Breaker for protection", datasheetLink: "https://docs.rs-online.com/8fcd/A700000007224906.pdf"},
-      { name: "MCB 3A 3P 10kA", part: "5SY43037CC", drawing: "0001, 0004", desc: "Three-pole breaker for control circuits", datasheetLink: "https://asset.conrad.com/media10/add/160267/c1/-/nl/001728442DS00/datenblatt-1728442-siemens-5sy43037-5sy4303-7-leitungsschutzschalter-3-a-230-v-400-v.pdf"},
-      { name: "MCB 1A 3P 10kA", part: "5SY43017CC", drawing: "0001, 0004, 0007", desc: "Three-phase low-current protection", datasheetLink: "https://cd-solec.com/storage/produit/5SY4301-7/5SY4301-7.pdf"},
-      { name: "MCB 10A 2P 6kA", part: "5SY62107CC", drawing: "0001, 0004, 0007", desc: "Double-pole protection breaker", datasheetLink: "https://docs.rs-online.com/886d/A700000006610260.pdf"},
-      { name: "MCB 6A 2P 6kA", part: "5SY62067CC", drawing: "0001, 0002, 0004, 0007", desc: "Two-pole circuit breaker", datasheetLink: "https://docs.rs-online.com/1043/A700000006610256.pdf"},
-      { name: "MCB 16A 2P 6kA", part: "5SY62167CC", drawing: "0001, 0004, 0007", desc: "Two-pole MCB for general load", datasheetLink: "https://docs.rs-online.com/acb2/A700000006610268.pdf"},
-      { name: "MCB 6A 1P 6kA", part: "5SY61067CC", drawing: "0002, 0005", desc: "Single-pole breaker for lighting", datasheetLink: "https://docs.rs-online.com/e9bc/0900766b813dff85.pdf"},
-      { name: "MCB 2A 1P 6kA", part: "5SY61027CC", drawing: "0002, 0005, 0008", desc: "Small load single-pole breaker", datasheetLink: "https://docs.rs-online.com/d8f0/0900766b813dff69.pdf"},
-      { name: "Emergency Stop Push Button", part: "XB4BS8444", drawing: "0002, 0005", desc: "Schneider Harmony E-Stop Pushbutton", datasheetLink: "https://docs.rs-online.com/d721/A700000007335528.pdf"},
-      { name: "Selector Switch 3 Pos", part: "D7P-SB32", drawing: "0002, 0005, 0008", desc: "3-position selector switch", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10029/D7PSB32-AU-Selector-Switch-22mm-Datasheet.pdf"},
-      { name: "Contactor Relay 2NO+2NC", part: "3RH2122-1BB40", drawing: "0002, 0005, 0008", desc: "4-pole contactor relay", datasheetLink: "https://docs.rs-online.com/eb47/0900766b813eb119.pdf"},
-      { name: "Green Indicator Lamp", part: "D7P-LF3PN3GX10", drawing: "0003, 0006, 0009", desc: "Green push-to-test indicator", datasheetLink: "https://www.nhpnz.co.nz/public/assets/pim/Original/10029/D7PLF3PN3GX10-NZ-Pushbutton-22.5mm-Datasheet.pdf"},
-      { name: "Amber Indicator Lamp", part: "D7P-P0PN3AX7", drawing: "0003, 0006, 0009", desc: "Amber indicator for signaling", datasheetLink: "https://www.nhp.com.au/-/media/Project/NHP/Sites/Shared/Resources/Catalogues/Files/D7-Pushbuttons--Operator-Control-Devices.pdf"},
-      { name: "Red Indicator Lamp", part: "D7PP4PN3RXD7", drawing: "0003, 0006, 0009", desc: "Red push-to-test indicator", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10044/D7PP4PN3RXD7-AU-Pilot-Light-22.5mm-Datasheet.pdf"},
-      { name: "SEL735 Meter", part: "SEL735", drawing: "0003", desc: "Power quality and metering relay", datasheetLink: "https://zangagency.com/wp-content/uploads/2024/08/ZANG-Meters-SEL735-Type.pdf"},
-      { name: "Contactor Relay 3NO+1NC", part: "3RH2131-1BB40", drawing: "0003, 0006, 0008", desc: "3NO + 1NC contactor relay", datasheetLink: "https://docs.rs-online.com/1679/0900766b814b7c1a.pdf"},
-      { name: "Contactor Relay 4NO+4NC", part: "3RH2140-1BB40", drawing: "0003, 0006, 0008", desc: "4NO + 4NC contactor relay", datasheetLink: "https://docs.rs-online.com/e9b8/0900766b814b7c1d.pdf"},
-      { name: "SEL787 Relay", part: "SEL787", drawing: "0004, 0005", desc: "Transformer protection relay", datasheetLink: "https://www.pesin.com.ph/sites/default/files/product-file/787-3-4_ds_20170815.pdf"}
-    ];
-
-    function switchTab(tab) {
-      document.querySelectorAll("section").forEach(s => s.classList.remove("active"));
-      document.querySelectorAll("nav button").forEach(b => b.classList.remove("active"));
-      document.getElementById(tab).classList.add("active");
-      document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add("active");
-    }
-
-    function loadComponents() {
-      const grid = document.getElementById("componentGrid");
-      grid.innerHTML = "";
-      components.forEach(c => {
-        const imgPath = `images/${c.part}.jpg`;
-        const pdfPath = c.datasheetLink || `datasheets/${c.part}.pdf`;
-        grid.innerHTML += `
-          <div class="card">
-            <img src="${imgPath}" alt="${c.name}" onerror="this.src='images/placeholder.jpg'">
-            <h3>${c.name}</h3>
-            <p><strong>Part:</strong> ${c.part}</p>
-            <p><strong>Drawing:</strong> ${c.drawing}</p>
-            <p>${c.desc}</p>
-            <a class="datasheet" href="${pdfPath}" target="_blank">View Datasheet</a>
-          </div>
-        `;
-      });
-    }
-
-    function filterComponents() {
-      const val = document.getElementById("search").value.toLowerCase();
-      document.querySelectorAll(".card").forEach(card => {
-        card.style.display = card.innerText.toLowerCase().includes(val) ? "block" : "none";
-      });
-    }
-
-    // Quiz Logic
-    let quiz = [], index = 0, score = 0, name = "";
-    function startQuiz() {
-      name = document.getElementById("userName").value.trim();
-      if (!name) { alert("Please enter your name"); return; }
-      quiz = [...components].sort(() => 0.5 - Math.random()).slice(0, 10);
-      index = 0; score = 0;
-      document.getElementById("startScreen").style.display = "none";
-      showQuestion();
-    }
-
-    function showQuestion() {
-      const q = quiz[index];
-      const opts = [...components].sort(() => 0.5 - Math.random()).slice(0, 4);
-      if (!opts.some(o => o.part === q.part)) opts[0] = q;
-      const container = document.getElementById("questionContainer");
-      container.innerHTML = `
-        <div class="quiz-question active">
-          <h3>Question ${index + 1} of ${quiz.length}</h3>
-          <p>Select the correct image for <b>${q.name}</b></p>
-          ${opts.map(o => `
-            <div class="option" onclick="checkAnswer(this,'${o.part}','${q.part}')">
-              <img src="images/${o.part}.jpg" alt="${o.name}" onerror="this.src='images/placeholder.jpg'">
-              <p>${o.part}</p>
+<header>
+    <img src="images/logo.png" alt="Advanced Mechanix Logo" class="header-logo" />
+    <h1>Component Study & Quiz — Project 6338</h1>
+    <div class="small-muted">Study list based on PART LIST DETAILS (6338). Quiz: mixed 30 questions.</div>
+</header>
+<nav id="main-nav" style="display:none;">
+    <button class="active" id="tab-study">Study Components</button>
+    <button id="tab-quiz">Take Quiz</button>
+    <button id="tab-admin-history" style="display:none;">View History</button>
+</nav>
+<main>
+    <section id="login-section">
+        <div class="login-box">
+            <h2 style="margin:6px 0">🔑 System Access</h2>
+            <p class="small-muted">Please select your access level and log in.</p>
+            <div id="role-choice" class="btn-choice">
+                <button class="btn" onclick="showLoginForm('user')">User Login</button>
+                <button class="btn" onclick="showLoginForm('admin')">Admin Login</button>
             </div>
-          `).join("")}
+            <div id="login-form" style="display:none; margin-top:15px;">
+                <h3 id="login-role-title" style="margin-top:0;"></h3>
+                <div class="login-input-group">
+                    <label for="username">Username:</label>
+                    <div id="username-input-container">
+                        <input id="username" type="text" placeholder="Enter username" />
+                    </div>
+                </div>
+                <div class="login-input-group">
+                    <label for="password">Password:</label>
+                    <input id="password" type="password" placeholder="Enter password" />
+                </div>
+                <div id="login-error" style="color:var(--bad); margin-bottom:10px;"></div>
+                <button class="btn" onclick="performLogin()">Log In</button>
+            </div>
         </div>
-      `;
+    </section>
+    <section id="study-section" style="display:none">
+        <input id="searchBox" class="search" placeholder="Search by part number, name or drawing..." oninput="filterStudy()" />
+        <div id="componentsGrid" class="grid"></div>
+    </section>
+    <section id="quiz-section" style="display:none">
+        <div class="quiz-wrap">
+            <div id="quizStart">
+                <div style="text-align:center;padding:18px">
+                    <h2 style="margin:6px 0">🎯 Take Quiz</h2>
+                    <p class="small-muted">Enter your name and start. 30 randomized questions (from three pools).</p>
+                    <input id="userName" class="search" placeholder="Your name (defaults to logged-in user)" />
+                    <div style="margin-top:10px">
+                        <button class="btn" onclick="initQuiz()">Start Quiz</button>
+                    </div>
+                </div>
+            </div>
+            <div id="quizArea" style="display:none">
+                <div class="q-header">
+                    <div>
+                        <div class="small-muted">Player: <span id="playerName"></span></div>
+                        <div class="small-muted">Question <span id="qIndex">0</span> / <span id="qTotal">0</span></div>
+                    </div>
+                    <div class="small-muted">Score: <span id="liveScore">0</span></div>
+                </div>
+                <div class="progress"><i id="progFill"></i></div>
+                <div id="questionContainer" class="question-area"></div>
+            </div>
+            <div id="quizEnd" style="display:none;text-align:center;padding:18px">
+                <h2>Result</h2>
+                <div style="font-weight:800;font-size:22px;margin:12px 0" id="finalResult"></div>
+                <div class="small-muted">Only total score shown</div>
+                <div style="margin-top:16px">
+                    <button class="btn" onclick="restartQuiz()">Try Again</button>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="admin-history-section" style="display:none">
+        <div class="quiz-wrap">
+            <h2 style="margin-top:0;">📋 Quiz History Log (Persistent)</h2>
+            <div id="quizHistoryDisplay">
+                <p class="small-muted" style="text-align:center;">Loading history...</p>
+            </div>
+            <h2 style="margin-top:20px;">📝 Session Activity Log (Resets on Refresh)</h2>
+            <div id="activityLogDisplay">
+                <p class="small-muted" style="text-align:center;">No in-session activity recorded yet.</p>
+            </div>
+        </div>
+    </section>
+</main>
+<footer>Images: put files in <code>images/</code> (example: <code>images/SEL751.jpg</code>). Missing images keep empty space — text remains visible.</footer>
+<div id="componentModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3 id="modalName" style="margin-top:0;"></h3>
+        <div class="modal-detail-img">
+            <img id="modalImage" src="" alt="Component Image" />
+        </div>
+        <div id="modalDetails">
+        </div>
+        <div style="margin-top: 15px;">
+            <a id="modalDatasheet" class="datasheet" href="#" target="_blank" rel="noopener" style="background:#000;">View Datasheet &rarr;</a>
+            <span id="noDatasheet" class="small-muted" style="margin-left:10px; display:none;">No datasheet link available.</span>
+        </div>
+    </div>
+</div>
+<script>
+/* ============================ DATA: components list (UPDATED FOR SEL751) ============================ */
+const components = [
+    {
+        id: 1,
+        name: "SEL751 Feeder Protection Relay",
+        part: "751002BCB4B7781AFF1",
+        drawing: "0001,0002,0007,0008",
+        desc: "SEL-751 microprocessor-based feeder protection relay for incomer protection with functions: 50, 51, 51N, 86, AFD, 50BF",
+        datasheetLink: "https://www.ien.eu/uploads/tx_etim/751_DS_20131101.pdf",
+        rating: "Incomer Protection",
+        manufacturer: "Schweitzer Engineering Laboratories (SEL)",
+        specs: "SEL-751 microprocessor-based feeder protection relay for incomer protection with functions: 50, 51, 51N, 86, AFD, 50BF",
+        technicalSpecs: "Model: SEL-751 Feeder Protection Relay\nProtection Functions:\n- 50: Instantaneous Overcurrent\n- 51: Time Overcurrent (TOC)\n- 51N: Earth Fault (Ground Overcurrent)\n- 86: Lockout Relay Function\n- AFD: Arc Flash Detection\n- 50BF: Breaker Failure Protection\nInputs:\n- Current: 1A or 5A nominal (configured for 1A from CTs)\n- Voltage: 110V nominal (from VT)\nOutputs:\n- Trip contacts (to breaker trip coil)\n- Alarm contacts\n- SCADA communication\nCommunication:\n- Ethernet (Modbus TCP, IEC 61850)\n- Serial (Modbus RTU)\nPower Supply: 24-48VDC or 110-240VAC\nDisplay: Color touchscreen, 8 pushbuttons\nSlots: A-E + Z for expansion modules",
+        pinIn: "Current Inputs:\n- IA, IB, IC: Phase currents from H01-CT2L1, CT2L2, CT2L3 (250/1A CTs)\n- IN: Residual/neutral current for earth fault (51N)\nVoltage Inputs:\n- VA, VB, VC: Phase voltages from H01-VT01 (110V secondary)\n- VN: Neutral voltage\nControl Power:\n- PWR1, PWR2: 24VDC control supply\nCommunication:\n- Ethernet: Port 1A, 1B (RJ45)\n- Serial: RS-485 for Modbus",
+        pinOut: "Trip Outputs (Slot A - Power Module):\n- OUT101: Main trip output to CB trip coil Y1\n- OUT102: Backup trip / alarm\nAlarm Outputs:\n- Various configurable alarm contacts for SCADA\nStatus LEDs:\n- Enabled, Trip, Instantaneous OC, Phase OC, Ground/Neutral OC, etc.\nAuxiliary Buttons:\n- Target Reset, AUX1-4 (configurable), Lock (enable/trip)\nClose/Trip Indication:\n- Monitors CB status via auxiliary contacts",
+        usageDetails: "Incomer feeder protection for Panel H01 (main 33kV supply)\nProtection Coordination:\n- 50: Instantaneous trip for high-fault currents (short circuit)\n- 51: Time-delayed overcurrent (overload protection)\n- 51N: Sensitive earth fault detection\n- 86: Lockout function after trip (prevents re-close until reset)\n- AFD: Arc flash detection for personnel safety\n- 50BF: Breaker failure backup (trips upstream if breaker fails to open)\nSettings:\n- CT ratio: 250/1\n- VT ratio: 300:1 (33000/110)\n- Pickup settings, time delays per coordination study\nTrends & Metering:\n- Records current, voltage, power, energy\n- Event recording for fault analysis\n- SOE (Sequence of Events) recording",
+        installationNotes: "1. Mount in Panel H01 control section\n2. Wire CT secondaries (H01-CT2L1/2/3) to IA, IB, IC inputs\n3. Wire VT secondary (H01-VT01) to VA, VB, VC inputs\n4. Connect trip output (OUT101) to CB trip coil Y1 through K1 interposing relay\n5. Connect 24VDC control power\n6. Configure settings per protection coordination study:\n   - CT/VT ratios\n   - 50/51/51N pickup and time settings\n   - Communication parameters (IP address, Modbus)\n7. Commission and test:\n   - Primary injection test\n   - Secondary injection test\n   - Trip circuit continuity\n   - Communication to SCADA\n8. Documentation:\n   - Record settings\n   - Event logs\n   - Fault records",
+        safetyWarnings: "⚠️ Configuration by qualified protection engineer only\n⚠️ Verify CT/VT ratios match actual installation\n⚠️ Test trip circuit thoroughly before energization\n⚠️ Backup settings to PC/USB regularly\n⚠️ Do not modify settings without coordination study\n⚠️ Incorrect settings can cause nuisance trips or failure to protect\n⚠️ Arc flash detection (AFD) is life safety - do not disable\n⚠️ Regular testing and maintenance per manufacturer recommendations."
+    },
+    { 
+        id:2, name:"Miniature circuit breaker (25A, 2-pole) (F1)", part:"5SY62257CC", drawing:"0001,0004,0007", desc:"MCB 25A, 2P, 6kA, C", datasheetLink: "https://docs.rs-online.com/8fcd/A700000007224906.pdf",
+        rating: "25A, 2-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Short-Circuit Breaking Capacity (Icn).",
+        technicalSpecs: "Tripping characteristic: C (5 to 10 times In). Suitable for general loads.",
+        pinIn: "Top terminals for Line/Input power (L1, L2)",
+        pinOut: "Bottom terminals for Load/Output circuit (T1, T2)",
+        usageDetails: "Used for overcurrent and short-circuit protection of lighting and socket circuits in control panels.",
+        installationNotes: "Must be mounted vertically on DIN rail. Torque terminals correctly to prevent overheating.",
+        safetyWarnings: "Do not exceed rated current or voltage. Always confirm circuit isolation before working downstream."
+    },
+    // The rest of the components remain unchanged (ids 2 through 94 as in your file)
+    { 
+        id:3, name:"Three-pole MCB (3A) (F5)", part:"5SY43037CC", drawing:"0001,0004", desc:"MCB 3A, 3P, 10kA, C", datasheetLink: "https://asset.conrad.com/media10/add/160267/c1/-/nl/001728442DS00/datenblatt-1728442-siemens-5sy43037-5sy4303-7-leitungsschutzschalter-3-a-230-v-400-v.pdf",
+        rating: "3A, 3-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 10 kA Short-Circuit Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C. Higher breaking capacity suitable for industrial environments.",
+        pinIn: "Top terminals for 3-phase Line input (L1, L2, L3)",
+        pinOut: "Bottom terminals for 3-phase Load output (T1, T2, T3)",
+        usageDetails: "Protection of low-power 3-phase auxiliary supply circuits, e.g., control power transformers or small motors.",
+        installationNotes: "Ensure phase sequence is maintained from input to output.",
+        safetyWarnings: "This device is a protection device, not a lockable isolator. Use an upstream isolator for maintenance."
+    },
+    { 
+        id:4, name:"Three-pole MCB (1A) (F6)", part:"5SY43017CC", drawing:"0001,0004,0007", desc:"MCB 1A, 3P, 10kA, C", datasheetLink: "https://cd-solec.com/storage/produit/5SY4301-7/5SY4301-7.pdf",
+        rating: "1A, 3-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 10 kA Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C. Highly sensitive to low overcurrents.",
+        pinIn: "Top terminals L1, L2, L3",
+        pinOut: "Bottom terminals T1, T2, T3",
+        usageDetails: "Protection of very sensitive 3-phase auxiliary circuits, such as small fan heaters or control voltage supplies.",
+        installationNotes: "Check the inrush current of the load; a B-curve MCB may be needed for highly inductive loads.",
+        safetyWarnings: "Always verify the device trip rating matches the cable size and connected equipment."
+    },
+    { 
+        id:5, name:"Miniature circuit breaker 10A (2-pole) (F10)", part:"5SY62107CC", drawing:"0001,0004,0007", desc:"MCB 10A, 2P, 6kA, C", datasheetLink: "https://docs.rs-online.com/886d/A700000006610260.pdf",
+        rating: "10A, 2-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Short-Circuit Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C.",
+        pinIn: "L1, L2 Input",
+        pinOut: "T1, T2 Output",
+        usageDetails: "Protection of general single-phase utility loads, smaller power supplies, or auxiliary heating elements.",
+        installationNotes: "Compatible with standard DIN rail mounting.",
+        safetyWarnings: "Ensure terminal screws are tight to prevent arc faults."
+    },
+    { 
+        id:6, name:"Miniature circuit breaker 6A (2-pole) (F11)", part:"5SY62067CC", drawing:"0001,0002,0004,0007", desc:"MCB 6A, 2P, 6kA, C", datasheetLink: "https://docs.rs-online.com/1043/A700000006610256.pdf",
+        rating: "6A, 2-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C.",
+        pinIn: "L1, L2 Input",
+        pinOut: "T1, T2 Output",
+        usageDetails: "Protection of control voltage transformers or small instrumentation power supplies.",
+        installationNotes: "The 6A rating is common for control circuits; verify the rating against the transformer primary current.",
+        safetyWarnings: "Avoid bridging terminals with incorrect wires or busbars."
+    },
+    { 
+        id:7, name:"Miniature circuit breaker 16A (2-pole) (F20)", part:"5SY62167CC", drawing:"0001,0004,0007", desc:"MCB 16A, 2P, 6kA, C", datasheetLink: "https://docs.rs-online.com/acb2/A700000006610268.pdf",
+        rating: "16A, 2-pole, 230/400V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C.",
+        pinIn: "L1, L2 Input",
+        pinOut: "T1, T2 Output",
+        usageDetails: "Protection for medium-power single-phase loads, power outlets, or auxiliary motors.",
+        installationNotes: "Used for reliable overcurrent protection in distribution boards.",
+        safetyWarnings: "Ensure conductor sizing meets the 16A rating requirements according to local codes."
+    },
+    { 
+        id:8, name:"Single pole MCB 6A (F9)", part:"5SY61067CC", drawing:"0002,0005", desc:"MCB 6A, 1P, 6kA, C", datasheetLink: "https://docs.rs-online.com/e9bc/0900766b813dff85.pdf",
+        rating: "6A, 1-pole, 230V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C. Only protects the single line wire.",
+        pinIn: "Top terminal (L)",
+        pinOut: "Bottom terminal (T)",
+        usageDetails: "Used for protecting single-phase internal control circuits, alarms, or low-voltage power supplies (where neutral is not switched).",
+        installationNotes: "Do not use in applications where load neutrality must be switched simultaneously with the live conductor.",
+        safetyWarnings: "Single-pole breakers isolate only the line, leaving the neutral connected. Confirm local standards allow this for the application."
+    },
+    { 
+        id:9, name:"Single pole MCB 2A (F90)", part:"5SY61027CC", drawing:"0002,0005,0008", desc:"MCB 2A, 1P, 6kA, C", datasheetLink: "https://docs.rs-online.com/d8f0/0900766b813dff69.pdf",
+        rating: "2A, 1-pole, 230V AC",
+        manufacturer: "Siemens",
+        specs: "Thermal-magnetic trip. 6 kA Breaking Capacity.",
+        technicalSpecs: "Tripping characteristic: C. Lowest rated current in the series.",
+        pinIn: "Top terminal (L)",
+        pinOut: "Bottom terminal (T)",
+        usageDetails: "Protection for very low-power control circuits, indicator lights, or PLC inputs.",
+        installationNotes: "Suitable for fine protection of delicate control system components.",
+        safetyWarnings: "Handle with care to avoid damage to the small terminals."
+    },
+    { 
+        id:10, name:"Schneider Harmony Emergency Stop", part:"XB4BS8444", drawing:"0002,0005", desc:"Emergency stop push-button (Harmony XB4)", datasheetLink: "https://docs.rs-online.com/d721/A700000007335528.pdf",
+        rating: "600V AC/DC Max; Contact rating up to 10A",
+        manufacturer: "Schneider Electric",
+        specs: "22 mm diameter, Mushroom head, Red, Turn-to-release, 1 NC contact block (Normally Closed).",
+        technicalSpecs: "Contact: Slow-break, snap action. IP66/IP67/IP69K protection.",
+        pinIn: "NC terminals (e.g., 1-2) wired in series with the safety circuit.",
+        pinOut: "Output of the safety circuit to the control relay.",
+        usageDetails: "Immediate interruption of dangerous machine operations. Essential part of any machine safety system.",
+        installationNotes: "The NC contact must be monitored by a safety relay to detect wire breakage. Ensure 'Turn-to-release' function is clear.",
+        safetyWarnings: "Must be easily accessible and clearly visible. Do not use for normal machine shut-down."
+    },
+    { 
+        id:11, name:"Selector Switch 3-pos", part:"D7P-SB32", drawing:"0002,0005,0008", desc:"22.5mm selector switch (3 positions)", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10029/D7PSB32-AU-Selector-Switch-22mm-Datasheet.pdf",
+        rating: "N/A (Signal device)",
+        manufacturer: "Sprecher+Schuh",
+        specs: "3-position, maintained action, black knob.",
+        technicalSpecs: "Maximum 6 contact blocks (NO or NC) can be attached.",
+        pinIn: "Common terminal (C)",
+        pinOut: "Terminals for Position 1, Position 2, Position 3 (NO/NC contacts)",
+        usageDetails: "Typically used for Local/Off/Remote control selection on a motor or system.",
+        installationNotes: "Requires a 22.5 mm mounting hole.",
+        safetyWarnings: "Always confirm the actual state of the selector switch before operating the system."
+    },
+    { 
+        id:12, name:"Contactor Relay 3RH2 (K1)", part:"3RH2122-1BB40", drawing:"0002,0005,0008", desc:"Siemens SIRIUS contactor relay (24V coil, 2NO+2NC)", datasheetLink: "https://docs.rs-online.com/eb47/0900766b813eb119.pdf",
+        rating: "Coil: 24V DC. Contacts: 6A (AC-15), 10A (AC-1)",
+        manufacturer: "Siemens",
+        specs: "Auxiliary Contactor, 2 Normally Open (NO) + 2 Normally Closed (NC) contacts.",
+        technicalSpecs: "Integrated suppressor diode for DC coil operation.",
+        pinIn: "A1/A2 (Coil), Auxiliary contacts (e.g., 13/14 for NO, 21/22 for NC)",
+        pinOut: "Output of the auxiliary contacts.",
+        usageDetails: "Used for latching, interlocking, and providing auxiliary feedback contacts in a control circuit.",
+        installationNotes: "Must be mounted vertically for rated current; snap-on mounting on DIN rail.",
+        safetyWarnings: "Ensure coil voltage matches the control supply. Incorrect coil voltage will damage the component."
+    },
+    { 
+        id:13, name:"Green Indicator (push-to-test)", part:"D7P-LF3PN3GX10", drawing:"0003,0006,0009", desc:"Sprecher+Schuh green push-to-test indicator", datasheetLink: "https://www.nhpnz.co.nz/public/assets/pim/Original/10029/D7PLF3PN3GX10-NZ-Pushbutton-22.5mm-Datasheet.pdf",
+        rating: "LED Supply: 24V AC/DC",
+        manufacturer: "Sprecher+Schuh",
+        specs: "22.5 mm, Green lens, Integrated push-to-test function.",
+        technicalSpecs: "Requires a standard 22.5 mm mounting hole. LED light source for long life.",
+        pinIn: "Terminals for the LED power supply.",
+        pinOut: "N/A (Output is light)",
+        usageDetails: "Indicates normal running status (e.g., 'System OK', 'Power On'). The push-to-test feature verifies the LED is functioning.",
+        installationNotes: "The push-to-test circuit requires a momentary contact block (not included) for the test function.",
+        safetyWarnings: "Use only the specified LED voltage to prevent burnout."
+    },
+    { 
+        id:14, name:"Amber Indicator (push-to-test)", part:"D7P-P0PN3AX7", drawing:"0003,0006,0009", desc:"Sprecher+Schuh amber push-to-test indicator", datasheetLink: "https://www.nhp.com.au/-/media/Project/NHP/Sites/Shared/Resources/Catalogues/Files/D7-Pushbuttons--Operator-Control-Devices.pdf",
+        rating: "LED Supply: 24V AC/DC",
+        manufacturer: "Sprecher+Schuh",
+        specs: "22.5 mm, Amber (Yellow) lens, Push-to-test.",
+        technicalSpecs: "Long-life LED. High visibility.",
+        pinIn: "Terminals for LED power.",
+        pinOut: "N/A",
+        usageDetails: "Indicates a non-critical warning or status (e.g., 'Maintenance Required', 'Standby Mode').",
+        installationNotes: "Mount on a clean, flat surface to ensure proper seal.",
+        safetyWarnings: "Ensure indicator meaning is clearly labeled on the panel for rapid operator response."
+    },
+    { 
+        id:15, name:"Red Indicator (push-to-test)", part:"D7PP4PN3RXD7", drawing:"0003,0006,0009", desc:"Sprecher+Schuh red push-to-test indicator", datasheetLink: "https://www.nhp.com.au/public/assets/pim/Original/10044/D7PP4PN3RXD7-AU-Pilot-Light-22.5mm-Datasheet.pdf",
+        rating: "LED Supply: 24V AC/DC",
+        manufacturer: "Sprecher+Schuh",
+        specs: "22.5 mm, Red lens, Push-to-test.",
+        technicalSpecs: "Standard 22.5 mm panel hole.",
+        pinIn: "LED power terminals.",
+        pinOut: "N/A",
+        usageDetails: "Indicates a fault, trip condition, or emergency status (e.g., 'System Failed', 'Overload Trip').",
+        installationNotes: "Often paired with an audible alarm for critical fault indication.",
+        safetyWarnings: "Do not use red indicators for 'System On' unless the system being 'On' represents a hazard."
+    },
+    { 
+        id:16, name:"SEL735 Power Meter (PM01)", part:"SEL735", drawing:"0003", desc:"Power metering relay (SEL735)", datasheetLink: "https://zangagency.com/wp-content/uploads/2024/08/ZANG-Meters-SEL735-Type.pdf",
+        rating: "Voltage: 100-480 VAC. Current: 1A or 5A Nominal CT input.",
+        manufacturer: "SEL",
+        specs: "Revenue-grade metering, power quality monitoring, event recording.",
+        technicalSpecs: "Class 0.2 accuracy. Communications: Ethernet and Serial.",
+        pinIn: "Voltage inputs (V1, V2, V3, VN), Current inputs (I1, I2, I3, IN), Control power.",
+        pinOut: "Digital outputs for pulse/alarm.",
+        usageDetails: "Accurate measurement of energy consumption (kWh) and real-time monitoring of electrical system parameters (V, A, P, Q, F).",
+        installationNotes: "Requires careful CT and VT wiring to maintain phase relationship for accurate power calculation.",
+        safetyWarnings: "**HIGH VOLTAGE COMPONENT.** Requires installation by qualified personnel. Isolate and short CTs before wiring."
+    },
+    { 
+        id:17, name:"Contactor Relay KBE (3NO+1NC)", part:"3RH2131-1BB40", drawing:"0003,0006,0008", desc:"Contactor 3NO+1NC (24V coil)", datasheetLink: "https://docs.rs-online.com/1679/0900766b814b7c1a.pdf",
+        rating: "Coil: 24V DC. Contacts: 6A (AC-15)",
+        manufacturer: "Siemens",
+        specs: "Auxiliary Contactor, 3 Normally Open (NO) + 1 Normally Closed (NC) contacts.",
+        technicalSpecs: "SIRIUS 3RT series, size S00.",
+        pinIn: "A1/A2 (Coil), Auxiliary contacts terminals (e.g., 13/14, 23/24, 33/34 for NO, 41/42 for NC).",
+        pinOut: "Output of auxiliary contacts.",
+        usageDetails: "Used for complex interlocking logic in control circuits where more than two auxiliary contacts are required.",
+        installationNotes: "Ensure correct wiring of NO and NC contacts to prevent unintended operation.",
+        safetyWarnings: "Do not use as a primary motor starter; this is an auxiliary control component."
+    },
+    { 
+        id:18, name:"Contactor Relay 4NO+4NC", part:"3RH2140-1BB40", drawing:"0003,0006,0008", desc:"Contactor with multiple auxiliaries", datasheetLink: "https://docs.rs-online.com/e9b8/0900766b814b7c1d.pdf",
+        rating: "Coil: 24V DC. Contacts: 6A (AC-15)",
+        manufacturer: "Siemens",
+        specs: "Auxiliary Contactor, 4 NO + 4 NC contacts.",
+        technicalSpecs: "High number of auxiliary contacts for complex control schemes.",
+        pinIn: "A1/A2 (Coil), 8 auxiliary contact terminals.",
+        pinOut: "Output of auxiliary contacts.",
+        usageDetails: "For centralized control logic requiring numerous status feedback signals or interlocking conditions.",
+        installationNotes: "The wide profile may require more DIN rail space than standard relays.",
+        safetyWarnings: "Due to the high terminal density, exercise caution to avoid mis-wiring adjacent terminals."
+    },
+    { 
+        id:19, name:"SEL787 Transformer Relay (EPR02)", part:"SEL787", drawing:"0004,0005", desc:"Transformer protection relay (SEL787)", datasheetLink: "https://www.pesin.com.ph/sites/default/files/product-file/787-3-4_ds_20170815.pdf",
+        rating: "Various power supply options. 1A/5A CT inputs.",
+        manufacturer: "SEL",
+        specs: "Differential, Overcurrent, and Thermal protection for two-winding transformers.",
+        technicalSpecs: "Fast tripping on internal faults (differential).",
+        pinIn: "CT inputs (Primary and Secondary), VT inputs, Control power.",
+        pinOut: "Trip/Alarm outputs, Communication ports.",
+        usageDetails: "Dedicated relay for the protection and monitoring of a power transformer.",
+        installationNotes: "Requires proper vector group matching and compensation settings to work correctly.",
+        safetyWarnings: "Critical component in the high-voltage system. Installation and settings must be checked by a protection engineer."
+    },
+    { 
+        id:20, name:"WEGA 2 Capacitive Voltage Detecting System (VDS) A51", part:"WEGA 2", drawing:"001,003,004", desc:"Provides safe visual indication of live status in 33 kV systems. Ensures operator safety during isolation and earthing procedures.", datasheetLink: "https://www.scribd.com/document/633632834/Wega-2-2-C-eng",
+        rating: "System Voltage: 33 kV (Requires capacitive coupling).",
+        manufacturer: "Horstmann",
+        specs: "Three-phase voltage detection, self-test function, permanent LED indication.",
+        technicalSpecs: "Indicates 'Live' or 'Dead' status. Fail-safe operation.",
+        pinIn: "Capacitive inputs from MV/HV bushings.",
+        pinOut: "LED status indicators (L1, L2, L3).",
+        usageDetails: "Installed on switchgear to verify the absence of voltage before accessing cubicles or applying earth switches.",
+        installationNotes: "Requires proper connection to the system's coupling electrodes. Must be functionally checked regularly.",
+        safetyWarnings: "**LIFE SAFETY DEVICE.** Malfunction can lead to severe injury. Never rely solely on VDS; always use a secondary proof of isolation."
+    },
+    // Remaining components 21–94 unchanged...
+    { 
+        id:21,
+        name: "Panel Light B90 (H01 Control Compartment)",
+        part: "B90",
+        drawing: "0001,0002,0004",
+        desc: "240V AC internal panel light for H01 LV control compartment",
+        datasheetLink: null,
+        rating: "240V AC, ~30W (Standard incandescent or LED)",
+        manufacturer: "Generic (Panel Builder)",
+        specs: "Manual or door-activated illumination for control wiring visibility",
+        technicalSpecs: "Wired via terminal block XC40. Protected by MCBs F9 (6A) and F90 (2A).",
+        pinIn: "240V AC supply from auxiliary bus (via F9/F90 MCBs)",
+        pinOut: "N/A (Light output only)",
+        usageDetails: "Provides general illumination inside the H01 LV control door for maintenance and troubleshooting. Activated when panel is powered or via door switch S80.",
+        installationNotes: "Mounted on inner surface of H01 LV control door. Ensure secure mounting and correct bulb/LED rating.",
+        safetyWarnings: "⚠️ Isolate power via F9/F90 before servicing. ⚠️ Do not exceed panel's auxiliary load capacity when replacing." },
+    { 
+        id: 22,
+        name: "Earth Switch E/SW-01 (33kV Incomer H01)",
+        part: "E_SW-01",
+        drawing: "0001,0002,0004,0005",
+        desc: "Manual three-position earth switch for 33kV incomer H01, interlocked with upstream Air Break Switch and ISOL-01",
+        datasheetLink: "https://www.eim.com.ua/documents/upload/doc/1/3AH3.pdf",
+        rating: "33kV, 20kA, Manual Operation",
+        manufacturer: "Siemens (as per switchgear package)",
+        specs: "Three-position: Open / Closed / Earthed. Key-interlocked with upstream Air Break Switch via Fortress KF2 solenoid interlock.",
+        technicalSpecs: "Mechanically interlocked with ISOL-01 (disconnect switch). Cannot be closed unless ISOL-01 is open. Cannot be operated unless upstream Air Break Switch is open (verified via KF2 key release).",
+        pinIn: "Mechanical interlock input from ISOL-01 position. Electrical interlock input from KF2 solenoid (24VDC).",
+        pinOut: "Auxiliary contacts to Remote Switching Panel (RSP01): 521/522 (Earth Open), 523/524 (Earth Closed). Drives indicators H106 (Red, Closed) and H107 (Amber, Open/Fault).",
+        usageDetails: "Used to safely earth the 33kV busbar and cable side of incomer H01 after isolation. Critical for personnel safety during maintenance. Operated only after:\n1. Upstream Air Break Switch is OPEN (releases KF2 key).\n2. ISOL-01 disconnect switch is OPEN.",
+        installationNotes: "Mounted directly on 33kV switchgear compartment. Mechanical position indicator visible on HV door. Auxiliary contacts wired to LV control panel terminals 521–524. Interlock coil (KF2) powered from 24VDC control supply.",
+        safetyWarnings: "⚠️ LIFE-SAFETY DEVICE. Never bypass interlocks.\n⚠️ Earth switch status must be verified visually AND via H106/H107 indicators.\n⚠️ Panel interlocked with upstream Air Break Switch: KF2 key TRAPPED when Air Break Switch is CLOSED.\n⚠️ Never rely solely on WEGA 2 VDS for proof of isolation—ALWAYS apply earth switch.\n⚠️ Only trained HV personnel may operate." },
+    { id:23, name:"E/SW-02 (switch)", part:"E/SW-02", drawing:"—", desc:"Panel switch E/SW-02", datasheetLink: null, rating: "10A @ 250V AC", manufacturer: "Generic", specs: "3-position maintained.", technicalSpecs: "Cam operated.", pinIn: "Input terminals.", pinOut: "Output terminals.", usageDetails: "Function selector.", installationNotes: "Align keyway correctly.", safetyWarnings: "Check switch position before starting equipment." },
+    { id:24, name:"E/SW-03 (switch)", part:"E/SW-03", drawing:"—", desc:"Panel switch E/SW-03", datasheetLink: null, rating: "10A @ 250V AC", manufacturer: "Generic", specs: "Momentary push-button.", technicalSpecs: "Spring return.", pinIn: "Input terminal.", pinOut: "Output terminal.", usageDetails: "Start/Stop button.", installationNotes: "Color code must match function (e.g., Green/Red).", safetyWarnings: "Verify NC contact functionality." },
+    { id:25, name:"GCB-01 (Gas CB)", part:"GCB-01", drawing:"—", desc:"Gas circuit breaker 01", datasheetLink: null, rating: "33 kV, 20 kA Interrupting", manufacturer: "OEM Specific", specs: "SF6 insulated.", technicalSpecs: "Operating mechanism: Spring charged.", pinIn: "Main power connections.", pinOut: "Main power connections.", usageDetails: "Primary protection and switching device.", installationNotes: "Requires proper gas handling during service.", safetyWarnings: "**HIGH VOLTAGE. SF6 GAS HAZARD.** Requires specialist training." },
+    { id:26, name:"GCB-02 (Gas CB)", part:"GCB-02", drawing:"—", desc:"Gas circuit breaker 02", datasheetLink: null, rating: "33 kV, 20 kA Interrupting", manufacturer: "OEM Specific", specs: "SF6 insulated.", technicalSpecs: "Operating mechanism: Spring charged.", pinIn: "Main power connections.", pinOut: "Main power connections.", usageDetails: "Primary protection and switching device.", installationNotes: "Requires proper gas handling during service.", safetyWarnings: "**HIGH VOLTAGE. SF6 GAS HAZARD.** Requires specialist training." },
+    { id:27, name:"CB-03", part:"CB-03", drawing:"—", desc:"Circuit breaker CB-03", datasheetLink: null, rating: "400A, 50 kA", manufacturer: "Generic", specs: "LV power circuit breaker.", technicalSpecs: "Electronic trip unit.", pinIn: "Line terminals.", pinOut: "Load terminals.", usageDetails: "Low-voltage main incoming protection.", installationNotes: "Verify connection torque.", safetyWarnings: "May contain stored energy in springs." },
+    { id:28, name:"H01-CT1L1 (CT)", part:"H01-CT1L1", drawing:"—", desc:"Current transformer H01 CT1 L1", datasheetLink: null, rating: "Ratio: 100/5A. Class 0.5", manufacturer: "Generic", specs: "Metering and protection core.", technicalSpecs: "Burden: 15 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Measures current on Phase L1.", installationNotes: "Secondary must be shorted if primary is energized.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:29, name:"H01-CT1L2 (CT)", part:"H01-CT1L2", drawing:"—", desc:"Current transformer H01 CT1 L2", datasheetLink: null, rating: "Ratio: 100/5A. Class 0.5", manufacturer: "Generic", specs: "Metering and protection core.", technicalSpecs: "Burden: 15 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Measures current on Phase L2.", installationNotes: "Ensure polarity (P1 to P2) is correct.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:30, name:"H01-CT1L3 (CT)", part:"H01-CT1L3", drawing:"—", desc:"Current transformer H01 CT1 L3", datasheetLink: null, rating: "Ratio: 100/5A. Class 0.5", manufacturer: "Generic", specs: "Metering and protection core.", technicalSpecs: "Burden: 15 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Measures current on Phase L3.", installationNotes: "Connect to the correct relay terminal.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:31, name:"H01-CT2L1 (CT)", part:"H01-CT2L1", drawing:"—", desc:"Current transformer H01 CT2 L1", datasheetLink: null, rating: "Ratio: 100/5A. Class 5P20", manufacturer: "Generic", specs: "Protection core only.", technicalSpecs: "Burden: 20 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Dedicated protection CT on Phase L1.", installationNotes: "Separate wiring is required for protection and metering CTs.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:32, name:"H01-CT2L2 (CT)", part:"H01-CT2L2", drawing:"—", desc:"Current transformer H01 CT2 L2", datasheetLink: null, rating: "Ratio: 100/5A. Class 5P20", manufacturer: "Generic", specs: "Protection core only.", technicalSpecs: "Burden: 20 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Dedicated protection CT on Phase L2.", installationNotes: "Check relay manual for correct terminal numbering.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:33, name:"H01-CT2L3 (CT)", part:"H01-CT2L3", drawing:"—", desc:"Current transformer H01 CT2 L3", datasheetLink: null, rating: "Ratio: 100/5A. Class 5P20", manufacturer: "Generic", specs: "Protection core only.", technicalSpecs: "Burden: 20 VA.", pinIn: "P1, P2 (Primary).", pinOut: "S1, S2 (Secondary).", usageDetails: "Dedicated protection CT on Phase L3.", installationNotes: "Keep secondary wiring away from high-noise circuits.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT** when current is flowing on the primary." },
+    { id:34, name:"H01-VT01 (VT)", part:"H01-VT01", drawing:"—", desc:"Voltage transformer H01 VT01", datasheetLink: null, rating: "Ratio: 33kV/110V. Class 0.5", manufacturer: "Generic", specs: "Three-phase voltage sensing.", technicalSpecs: "Fuses/MCBs required on primary and secondary.", pinIn: "Primary high voltage terminals (H1, H2, H3, HN).", pinOut: "Secondary low voltage terminals (X1, X2, X3, XN).", usageDetails: "Provides scaled voltage input to protection relays and meters.", installationNotes: "Ensure secondary side is grounded as required by standard.", safetyWarnings: "**HIGH VOLTAGE PRIMARY.** Fuses must be correctly rated." },
+    { id:35, name:"H02-CT1L1", part:"H02-CT1L1", drawing:"—", desc:"CT H02 CT1 L1", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H02, Phase L1.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:36, name:"H02-CT1L2", part:"H02-CT1L2", drawing:"—", desc:"CT H02 CT1 L2", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H02, Phase L2.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:37, name:"H02-CT1L3", part:"H02-CT1L3", drawing:"—", desc:"CT H02 CT1 L3", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H02, Phase L3.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:38, name:"H03-CT1L1", part:"H03-CT1L1", drawing:"—", desc:"CT H03 CT1 L1", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H03, Phase L1.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:39, name:"H03-CT1L2", part:"H03-CT1L2", drawing:"—", desc:"CT H03 CT1 L2", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H03, Phase L2.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:40, name:"H03-CT1L3", part:"H03-CT1L3", drawing:"—", desc:"CT H03 CT1 L3", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering Core.", technicalSpecs: "Refer to H01 series for specs.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for circuit H03, Phase L3.", installationNotes: "Standard installation procedures apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:41, name:"Pilot Light H101", part:"H101", drawing:"—", desc:"Indicator H101", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Green.", technicalSpecs: "Integrated resistor.", pinIn: "Positive and negative supply.", pinOut: "N/A.", usageDetails: "Indicates system status (e.g., Run).", installationNotes: "Verify LED color and voltage.", safetyWarnings: "None." },
+    { id:42, name:"Pilot Light H102", part:"H102", drawing:"—", desc:"Indicator H102", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Red.", technicalSpecs: "Low current draw.", pinIn: "Positive and negative supply.", pinOut: "N/A.", usageDetails: "Indicates system fault (e.g., Trip).", installationNotes: "Ensure proper torque on retaining nut.", safetyWarnings: "None." },
+    { id:43, name:"Pilot Light H103", part:"H103", drawing:"—", desc:"Indicator H103", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Amber.", technicalSpecs: "IP65 front rating.", pinIn: "Positive and negative supply.", pinOut: "N/A.", usageDetails: "Indicates warning or auxiliary status.", installationNotes: "Check wiring against drawing.", safetyWarnings: "None." },
+    { id:44, name:"Pilot Light H104", part:"H104", drawing:"—", desc:"Indicator H104", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Blue.", technicalSpecs: "High intensity.", pinIn: "Positive and negative supply.", pinOut: "N/A.", usageDetails: "Used for system communication status.", installationNotes: "Avoid touching LED surface.", safetyWarnings: "None." },
+    { id:45, name:"Pilot Light H105", part:"H105", drawing:"—", desc:"Indicator H105", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, White.", technicalSpecs: "General purpose.", pinIn: "Positive and negative supply.", pinOut: "N/A.", usageDetails: "Used for general power indication.", installationNotes: "Standard mounting procedure.", safetyWarnings: "None." },
+    { id:46, name:"Pilot Light H106", part:"H106", drawing:"—", desc:"Indicator H106", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Green.", technicalSpecs: "Snap-in mounting.", pinIn: "Power input.", pinOut: "N/A.", usageDetails: "Auxiliary status indication.", installationNotes: "Requires minimum panel thickness.", safetyWarnings: "None." },
+    { id:47, name:"Pilot Light H107", part:"H107", drawing:"—", desc:"Indicator H107", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Red.", technicalSpecs: "Bayonet lamp holder.", pinIn: "Power input.", pinOut: "N/A.", usageDetails: "Fault indication.", installationNotes: "Ensure lamp holder is secure.", safetyWarnings: "None." },
+    { id:48, name:"Pilot Light H108", part:"H108", drawing:"—", desc:"Indicator H108", datasheetLink: null, rating: "24V DC LED", manufacturer: "Generic", specs: "22.5 mm, Amber.", technicalSpecs: "Panel seal gasket.", pinIn: "Power input.", pinOut: "N/A.", usageDetails: "Warning indication.", installationNotes: "Use correct size spade terminals.", safetyWarnings: "None." },
+    { id:49, name:"H80", part:"H80", drawing:"—", desc:"Term block or harness H80", datasheetLink: null, rating: "30A, 600V", manufacturer: "Phoenix Contact", specs: "Terminal block.", technicalSpecs: "Screw connection.", pinIn: "Wiring from field/other panel.", pinOut: "Wiring to internal components.", usageDetails: "Connection point for external wiring harnesses.", installationNotes: "Torque screws to specification.", safetyWarnings: "Never wire live." },
+    { id:50, name:"ISOL-01 (Isolator)", part:"ISOL-01", drawing:"—", desc:"Isolator 1", datasheetLink: null, rating: "100A, 690V", manufacturer: "ABB", specs: "Three-pole load break switch.", technicalSpecs: "Lockable in OFF position.", pinIn: "Line/Input terminals.", pinOut: "Load/Output terminals.", usageDetails: "Primary means of electrical isolation.", installationNotes: "Ensure all phases break simultaneously.", safetyWarnings: "**LOCKOUT/TAGOUT DEVICE.** Must be locked out before maintenance." },
+    { id:51, name:"ISOL-02 (Isolator)", part:"ISOL-02", drawing:"—", desc:"Isolator 2", datasheetLink: null, rating: "100A, 690V", manufacturer: "ABB", specs: "Three-pole load break switch.", technicalSpecs: "Auxiliary contact included.", pinIn: "Line/Input terminals.", pinOut: "Load/Output terminals.", usageDetails: "Isolation for a specific sub-circuit.", installationNotes: "Check auxiliary contact operation.", safetyWarnings: "**LOCKOUT/TAGOUT DEVICE.**" },
+    { id:52, name:"ISOL-03 (Isolator)", part:"ISOL-03", drawing:"—", desc:"Isolator 3", datasheetLink: null, rating: "100A, 690V", manufacturer: "ABB", specs: "Three-pole load break switch.", technicalSpecs: "External handle operation.", pinIn: "Line/Input terminals.", pinOut: "Load/Output terminals.", usageDetails: "Motor circuit isolation.", installationNotes: "Ensure shaft length is correct for enclosure depth.", safetyWarnings: "**LOCKOUT/TAGOUT DEVICE.**" },
+    { id:53, name:"K1 Contactor", part:"K1", drawing:"—", desc:"Main contactor K1", datasheetLink: null, rating: "50A, AC-3. Coil 24V DC", manufacturer: "Siemens", specs: "Power Contactor, 3 Pole.", technicalSpecs: "Integrated auxiliary contact.", pinIn: "Power terminals L1, L2, L3; Coil A1, A2.", pinOut: "Power terminals T1, T2, T3.", usageDetails: "Switches the main power to a motor or load.", installationNotes: "Use appropriate lug size.", safetyWarnings: "High current paths; ensure tight connections." },
+    { id:54, name:"K10", part:"K10", drawing:"—", desc:"Contactor K10", datasheetLink: null, rating: "10A, AC-3. Coil 24V DC", manufacturer: "Siemens", specs: "Small power contactor.", technicalSpecs: "Single auxiliary contact.", pinIn: "Power and Coil.", pinOut: "Power output.", usageDetails: "Switches a smaller auxiliary load.", installationNotes: "Verify overload relay is correctly sized.", safetyWarnings: "Do not exceed maximum operating current." },
+    { id:55, name:"K101", part:"K101", drawing:"—", desc:"Contactor K101", datasheetLink: null, rating: "10A, AC-3. Coil 24V DC", manufacturer: "Siemens", specs: "Small power contactor.", technicalSpecs: "Screw terminal.", pinIn: "Power and Coil.", pinOut: "Power output.", usageDetails: "Used in control loop.", installationNotes: "Standard DIN rail mounting.", safetyWarnings: "None." },
+    { id:56, name:"K105", part:"K105", drawing:"—", desc:"Contactor K105", datasheetLink: null, rating: "10A, AC-3. Coil 24V DC", manufacturer: "Siemens", specs: "Small power contactor.", technicalSpecs: "IP20 finger-safe terminals.", pinIn: "Power and Coil.", pinOut: "Power output.", usageDetails: "Used in control loop.", installationNotes: "Check coil operating range.", safetyWarnings: "None." },
+    { id:57, name:"K5A", part:"K5A", drawing:"—", desc:"Relay K5A", datasheetLink: null, rating: "8A, 250V AC. Coil 24V DC", manufacturer: "Omron", specs: "General purpose relay.", technicalSpecs: "Octal base.", pinIn: "Coil (A1/A2), Contacts (C, NO, NC).", pinOut: "Contacts (C, NO, NC).", usageDetails: "Interface relay between low-power logic and higher-power circuits.", installationNotes: "Requires an 8-pin socket.", safetyWarnings: "Ensure correct pin alignment when inserting into socket." },
+    { id:58, name:"K7", part:"K7", drawing:"—", desc:"Relay K7", datasheetLink: null, rating: "8A, 250V AC. Coil 24V DC", manufacturer: "Omron", specs: "General purpose relay.", technicalSpecs: "14-pin base.", pinIn: "Coil (A1/A2), Various contacts.", pinOut: "Various contacts.", usageDetails: "Interface relay.", installationNotes: "Use correct base for pin configuration.", safetyWarnings: "None." },
+    { id:59, name:"K9", part:"K9", drawing:"—", desc:"Relay K9", datasheetLink: null, rating: "8A, 250V AC. Coil 24V DC", manufacturer: "Omron", specs: "General purpose relay.", technicalSpecs: "Screw clamp terminals.", pinIn: "Coil and contacts.", pinOut: "Contacts.", usageDetails: "Auxiliary control relay.", installationNotes: "Check contact rating for load.", safetyWarnings: "None." },
+    { id:60, name:"KBE (contactor relay)", part:"KBE", drawing:"0003,0006,0008", desc:"Contactor relay (3NO+1NC)", datasheetLink: null, rating: "Coil: 24V DC. Contacts: 6A", manufacturer: "Siemens", specs: "Auxiliary contactor.", technicalSpecs: "SIRIUS 3RT series.", pinIn: "A1/A2, Auxiliary contacts.", pinOut: "Auxiliary contacts.", usageDetails: "Control circuit logic.", installationNotes: "Standard DIN rail mounting.", safetyWarnings: "None." },
+    { id:61, name:"KF2", part:"KF2", drawing:"—", desc:"Auxiliary relay KF2", datasheetLink: null, rating: "5A, 24V DC", manufacturer: "Generic", specs: "Small PCB relay.", technicalSpecs: "Plug-in type.", pinIn: "Coil and contacts.", pinOut: "Contacts.", usageDetails: "Low-power switching.", installationNotes: "Requires low insertion force.", safetyWarnings: "None." },
+    { id:62, name:"LCS01 (E-stop)", part:"LCS01", drawing:"0002,0005", desc:"Emergency stop pushbutton LCS01", datasheetLink: null, rating: "600V Max, 10A", manufacturer: "Schneider Electric", specs: "Mushroom head, Pull-to-release.", technicalSpecs: "1 NC contact.", pinIn: "NC terminals.", pinOut: "NC terminals.", usageDetails: "Safety emergency stop.", installationNotes: "Mount in easily accessible location.", safetyWarnings: "Must be part of a compliant safety circuit." },
+    { id:63, name:"MCU-MH (controller)", part:"MCU-MH", drawing:"—", desc:"Microcontroller module", datasheetLink: null, rating: "24V DC Supply", manufacturer: "Custom/Generic", specs: "Digital I/O module.", technicalSpecs: "Microprocessor based.", pinIn: "Power, Digital Inputs, Communication.", pinOut: "Digital Outputs.", usageDetails: "Central control logic for auxiliary functions.", installationNotes: "Protect from static discharge.", safetyWarnings: "Do not hot-swap modules." },
+    { id:64, name:"PM01 (meter)", part:"PM01", drawing:"0003", desc:"Power meter PM01", datasheetLink: null, rating: "CT 1A/5A, VT 110V.", manufacturer: "SEL", specs: "Power quality meter.", technicalSpecs: "High accuracy.", pinIn: "CT, VT, Control power inputs.", pinOut: "Digital outputs, Comms.", usageDetails: "Measurement and monitoring of power system.", installationNotes: "Follow grounding procedures.", safetyWarnings: "**HIGH VOLTAGE CONNECTION POINTS.**" },
+    { id:65, name:"R90", part:"R90", drawing:"—", desc:"Resistor or relay R90", datasheetLink: null, rating: "5W, 10 Ohms", manufacturer: "Generic", specs: "Wirewound resistor.", technicalSpecs: "Tolerance 5%.", pinIn: "Input terminals.", pinOut: "Output terminals.", usageDetails: "Current limiting or damping.", installationNotes: "Mount with airflow; gets hot.", safetyWarnings: "**RISK OF BURN.** Do not touch when energized." },
+    { id:66, name:"S1 (switch)", part:"S1", drawing:"—", desc:"Switch S1", datasheetLink: null, rating: "10A, 250V AC", manufacturer: "Generic", specs: "2-position maintained.", technicalSpecs: "Rotary switch.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Local control.", installationNotes: "Ensure switch plate alignment.", safetyWarnings: "None." },
+    { id:67, name:"S10", part:"S10", drawing:"—", desc:"Switch S10", datasheetLink: null, rating: "10A, 250V AC", manufacturer: "Generic", specs: "3-position maintained.", technicalSpecs: "Key lock switch.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Access control (key required).", installationNotes: "Key removal only in OFF position.", safetyWarnings: "Restrict key access to authorized personnel." },
+    { id:68, name:"S101", part:"S101", drawing:"—", desc:"Selector S101", datasheetLink: null, rating: "5A, 250V AC", manufacturer: "Generic", specs: "2-position selector.", technicalSpecs: "Short handle.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Mode selection.", installationNotes: "Use correct contact blocks.", safetyWarnings: "None." },
+    { id:69, name:"S201", part:"S201", drawing:"—", desc:"Selector S201", datasheetLink: null, rating: "5A, 250V AC", manufacturer: "Generic", specs: "3-position selector.", technicalSpecs: "Long handle.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Local/Off/Remote control.", installationNotes: "Ensure smooth rotation.", safetyWarnings: "None." },
+    { id:70, name:"S301", part:"S301", drawing:"—", desc:"Selector S301", datasheetLink: null, rating: "5A, 250V AC", manufacturer: "Generic", specs: "4-position selector.", technicalSpecs: "Maintained.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Complex mode selection.", installationNotes: "Check wiring for 4-position logic.", safetyWarnings: "None." },
+    { id:71, name:"S4", part:"S4", drawing:"—", desc:"Switch S4", datasheetLink: null, rating: "10A, 250V AC", manufacturer: "Generic", specs: "Toggle switch.", technicalSpecs: "SPST.", pinIn: "Terminals.", pinOut: "Terminals.", usageDetails: "Auxiliary function ON/OFF.", installationNotes: "Secure mounting.", safetyWarnings: "None." },
+    { id:72, name:"S80", part:"S80", drawing:"—", desc:"Terminal S80", datasheetLink: null, rating: "30A, 600V", manufacturer: "Phoenix Contact", specs: "Terminal block.", technicalSpecs: "Spring cage.", pinIn: "Incoming wire.", pinOut: "Outgoing wire.", usageDetails: "Junction point.", installationNotes: "No special tooling required.", safetyWarnings: "Ensure conductor end is properly ferrulled." },
+    { id:73, name:"TF01-CT1L1", part:"TF01-CT1L1", drawing:"—", desc:"TF01 CT1 L1", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:74, name:"TF01-CT1L2", part:"TF01-CT1L2", drawing:"—", desc:"TF01 CT1 L2", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:75, name:"TF01-CT1L3", part:"TF01-CT1L3", drawing:"—", desc:"TF01 CT1 L3", datasheetLink: null, rating: "100/5A, Class 0.5", manufacturer: "Generic", specs: "Metering CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:76, name:"TF01-CT2L1", part:"TF01-CT2L1", drawing:"—", desc:"TF01 CT2 L1", datasheetLink: null, rating: "100/5A, Class 5P20", manufacturer: "Generic", specs: "Protection CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Protection current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:77, name:"TF01-CT2L2", part:"TF01-CT2L2", drawing:"—", desc:"TF01 CT2 L2", datasheetLink: null, rating: "100/5A, Class 5P20", manufacturer: "Generic", specs: "Protection CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Protection current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:78, name:"TF01-CT2L3", part:"TF01-CT2L3", drawing:"—", desc:"TF01 CT2 L3", datasheetLink: null, rating: "100/5A, Class 5P20", manufacturer: "Generic", specs: "Protection CT.", technicalSpecs: "Refer to H01 series.", pinIn: "Primary.", pinOut: "Secondary.", usageDetails: "Protection current sensing for transformer TF01.", installationNotes: "Standard CT notes apply.", safetyWarnings: "**NEVER OPEN CT SECONDARY CIRCUIT.**" },
+    { id:79, name:"XA01X", part:"XA01X", drawing:"—", desc:"Terminal block XA01X", datasheetLink: null, rating: "50A, 600V", manufacturer: "Wago", specs: "Multi-level terminal block.", technicalSpecs: "Cage clamp.", pinIn: "Multiple wires.", pinOut: "Multiple wires.", usageDetails: "High-density wiring interface.", installationNotes: "Use correct tool for clamp operation.", safetyWarnings: "Avoid over-stuffing terminals." },
+    { id:80, name:"XA02", part:"XA02", drawing:"—", desc:"Terminal XA02", datasheetLink: null, rating: "30A, 600V", manufacturer: "Wago", specs: "Terminal block.", technicalSpecs: "Lever-operated.", pinIn: "Incoming wire.", pinOut: "Outgoing wire.", usageDetails: "General purpose terminal strip.", installationNotes: "Ensure levers are fully closed.", safetyWarnings: "None." },
+    { id:81, name:"XA03", part:"XA03", drawing:"—", desc:"Terminal XA03", datasheetLink: null, rating: "30A, 600V", manufacturer: "Wago", specs: "Terminal block.", technicalSpecs: "Push-in technology.", pinIn: "Incoming wire.", pinOut: "Outgoing wire.", usageDetails: "General purpose terminal strip.", installationNotes: "Only solid wire or ferruled stranded wire can be pushed-in.", safetyWarnings: "None." },
+    { id:82, name:"XC10", part:"XC10", drawing:"—", desc:"Terminal XC10", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Screw terminal block.", technicalSpecs: "Small pitch.", pinIn: "Incoming control wire.", pinOut: "Outgoing control wire.", usageDetails: "Control wiring interface.", installationNotes: "Low torque required.", safetyWarnings: "None." },
+    { id:83, name:"XC30", part:"XC30", drawing:"—", desc:"Terminal XC30", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Screw terminal block.", technicalSpecs: "Double-decker.", pinIn: "Incoming control wire.", pinOut: "Outgoing control wire.", usageDetails: "Space-saving terminal block.", installationNotes: "Use numbered markers.", safetyWarnings: "None." },
+    { id:84, name:"XC40", part:"XC40", drawing:"—", desc:"Terminal XC40", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Screw terminal block.", technicalSpecs: "Triple-decker.", pinIn: "Incoming control wire.", pinOut: "Outgoing control wire.", usageDetails: "High-density control wiring.", installationNotes: "Be careful when wiring the lowest deck.", safetyWarnings: "None." },
+    { id:85, name:"XC90", part:"XC90", drawing:"—", desc:"Terminal XC90", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Grounding terminal block.", technicalSpecs: "Green/Yellow color.", pinIn: "Earth wire.", pinOut: "Earth wire.", usageDetails: "Protective earth connection.", installationNotes: "Must be securely connected to DIN rail.", safetyWarnings: "Must be correctly wired for safety." },
+    { id:86, name:"XPE", part:"XPE", drawing:"—", desc:"Protective earth terminal", datasheetLink: null, rating: "76A, 1000V", manufacturer: "Phoenix Contact", specs: "PE terminal block.", technicalSpecs: "Cross-section 16mm².", pinIn: "Main earth conductor.", pinOut: "Earth busbar/equipment earth.", usageDetails: "Main protective earth connection point.", installationNotes: "Use largest conductor size.", safetyWarnings: "Ensure low-resistance connection to earth." },
+    { id:87, name:"XQ0", part:"XQ0", drawing:"—", desc:"Connector XQ0", datasheetLink: null, rating: "5A, 30V", manufacturer: "Generic", specs: "Multi-pin connector.", technicalSpecs: "IDC type.", pinIn: "Field device cable.", pinOut: "PLC I/O module.", usageDetails: "Quick connection to I/O racks.", installationNotes: "Ensure correct keying.", safetyWarnings: "Do not force connection." },
+    { id:88, name:"XQ1", part:"XQ1", drawing:"—", desc:"Connector XQ1", datasheetLink: null, rating: "5A, 30V", manufacturer: "Generic", specs: "Multi-pin connector.", technicalSpecs: "Screw lock.", pinIn: "Field device cable.", pinOut: "PLC I/O module.", usageDetails: "Quick connection to I/O racks.", installationNotes: "Tighten locking screws.", safetyWarnings: "None." },
+    { id:89, name:"XT21", part:"XT21", drawing:"—", desc:"Terminal XT21", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Test disconnect terminal.", technicalSpecs: "Sliding link.", pinIn: "Relay current terminal.", pinOut: "CT wire.", usageDetails: "Allows safe current injection/measurement without disconnecting wires.", installationNotes: "Ensure test link is in 'Connect' position for normal operation.", safetyWarnings: "Never leave test links open on CT circuits." },
+    { id:90, name:"XT5", part:"XT5", drawing:"—", desc:"Terminal XT5", datasheetLink: null, rating: "10A, 250V", manufacturer: "Generic", specs: "Fuse terminal block.", technicalSpecs: "Hinged lever type.", pinIn: "Input wire.", pinOut: "Output wire via fuse.", usageDetails: "Provides circuit protection.", installationNotes: "Use correct fuse rating.", safetyWarnings: "Isolate power before changing fuse." },
+    { id:91, name:"Y1", part:"Y1", drawing:"—", desc:"Actuator Y1", datasheetLink: null, rating: "24V DC, 10W", manufacturer: "Generic", specs: "Solenoid valve.", technicalSpecs: "IP67.", pinIn: "Power input.", pinOut: "N/A (Actuation).", usageDetails: "Pneumatic or hydraulic control element.", installationNotes: "Ensure correct orientation.", safetyWarnings: "Mechanical hazard during operation." },
+    { id:92, name:"Y10", part:"Y10", drawing:"—", desc:"Actuator Y10", datasheetLink: null, rating: "24V DC, 10W", manufacturer: "Generic", specs: "Solenoid valve.", technicalSpecs: "Screw terminal.", pinIn: "Power input.", pinOut: "N/A (Actuation).", usageDetails: "Pneumatic control.", installationNotes: "Check air pressure rating.", safetyWarnings: "Mechanical hazard during operation." },
+    { id:93, name:"Y11", part:"Y11", drawing:"—", desc:"Actuator Y11", datasheetLink: null, rating: "24V DC, 10W", manufacturer: "Generic", specs: "Solenoid valve.", technicalSpecs: "Quick connect.", pinIn: "Power input.", pinOut: "N/A (Actuation).", usageDetails: "Hydraulic control.", installationNotes: "Use correct matching plug.", safetyWarnings: "Hydraulic pressure hazard." },
+    { id:94, name:"Y9", part:"Y9", drawing:"—", desc:"Actuator Y9", datasheetLink: null, rating: "24V DC, 10W", manufacturer: "Generic", specs: "Solenoid valve.", technicalSpecs: "LED indicator.", pinIn: "Power input.", pinOut: "N/A (Actuation).", usageDetails: "Auxiliary control.", installationNotes: "Ensure LED is visible.", safetyWarnings: "None." }
+];
+/* ============================ LOGIN/AUTH DATA & LOGIC (Unchanged) ============================ */
+const USER_CREDENTIALS = {
+    dusty: '1234', saul: '1233', addy: '1244', shaz: '1212', Shahid: '1231',
+    'mir max': '1243', Fahad: '8989', haris: '7894', Rashid: '5656', hazz: '8975', sherry: '5623'
+};
+const ADMIN_CREDENTIALS = {
+    'junaid qazi': '987456', saul: '785462'
+};
+const HISTORY_STORAGE_KEY = 'project6338_quiz_history';
+let currentRole = null;
+let currentUsername = null;
+let currentCredentials = null;
+let sessionActivityLog = []; // In-session log
+// Helper to log general actions (for in-session Admin Log)
+function logActivity(action, details = '') {
+    const timestamp = new Date().toLocaleTimeString();
+    const entry = `${timestamp} - **${currentUsername}** (${currentRole}): ${action}${details ? ' - ' + details : ''}`;
+    sessionActivityLog.unshift(entry);
+    if (currentRole === 'admin') {
+        updateAdminSessionLogDisplay();
     }
-
-    function checkAnswer(el, chosen, correct) {
-      const all = document.querySelectorAll(".option");
-      all.forEach(o => o.style.pointerEvents = "none");
-      if (chosen === correct) { el.classList.add("correct"); score++; }
-      else { el.classList.add("incorrect"); all.forEach(o => { if (o.innerText.includes(correct)) o.classList.add("correct"); }); }
-      if (index < quiz.length - 1) {
-        const btn = document.createElement("button");
-        btn.className = "next-btn";
-        btn.innerText = "Next";
-        btn.onclick = nextQuestion;
-        document.getElementById("questionContainer").appendChild(btn);
-      } else {
-        const btn = document.createElement("button");
-        btn.className = "next-btn";
-        btn.innerText = "Show Result";
-        btn.onclick = showResult;
-        document.getElementById("questionContainer").appendChild(btn);
-      }
+}
+// Retrieves quiz history from localStorage
+function getQuizHistory() {
+    const historyJson = localStorage.getItem(HISTORY_STORAGE_KEY);
+    return historyJson ? JSON.parse(historyJson) : [];
+}
+// Saves a new quiz result to localStorage
+function saveQuizResult(username, score, total) {
+    const history = getQuizHistory();
+    const result = {
+        user: username,
+        score: `${score}/${total}`,
+        timestamp: new Date().toLocaleString()
+    };
+    history.unshift(result); // Add newest result first
+    localStorage.setItem(HISTORY_STORAGE_KEY, JSON.stringify(history));
+}
+// Shows the form for a specific role
+function showLoginForm(role) {
+    const title = document.getElementById('login-role-title');
+    const form = document.getElementById('login-form');
+    const roleChoice = document.getElementById('role-choice');
+    const usernameContainer = document.getElementById('username-input-container');
+    title.innerText = role.charAt(0).toUpperCase() + role.slice(1) + ' Login';
+    form.style.display = 'block';
+    roleChoice.style.display = 'none';
+    document.getElementById('login-error').innerText = '';
+    document.getElementById('password').value = '';
+    currentRole = role;
+    currentCredentials = role === 'admin' ? ADMIN_CREDENTIALS : USER_CREDENTIALS;
+    // *** NEW LOGIC: Use Select for User Role, Input for Admin ***
+    if (role === 'user') {
+        const userNames = Object.keys(USER_CREDENTIALS).sort();
+        const selectHtml = `
+            <select id="username" class="text-answer">
+                <option value="" disabled selected>Select your name</option>
+                ${userNames.map(name => `<option value="${name}">${name}</option>`).join('')}
+            </select>
+        `;
+        usernameContainer.innerHTML = selectHtml;
+    } else {
+        // Admin or default: use text input
+        usernameContainer.innerHTML = `<input id="username" type="text" placeholder="Enter username" />`;
     }
-
-    function nextQuestion() { index++; showQuestion(); }
-    function showResult() {
-      document.getElementById("questionContainer").innerHTML = "";
-      document.getElementById("resultContainer").style.display = "block";
-      document.getElementById("resultText").innerText = `${name}, your score is ${score}/${quiz.length}`;
+}
+// Attempts to log the user in
+function performLogin() {
+    const usernameElement = document.getElementById('username');
+    const usernameInput = usernameElement.value.trim();
+    const passwordInput = document.getElementById('password').value.trim();
+    const errorDisplay = document.getElementById('login-error');
+    errorDisplay.innerText = '';
+    if (!usernameInput) {
+        errorDisplay.innerText = currentRole === 'user' ? 'Please select a username.' : 'Please enter a username.';
+        return;
     }
-    function restartQuiz() {
-      document.getElementById("resultContainer").style.display = "none";
-      document.getElementById("startScreen").style.display = "block";
+    const password = currentCredentials[usernameInput];
+    if (password && password === passwordInput) {
+        currentUsername = usernameInput;
+        logActivity('Login Successful');
+        showMainContent();
+    } else {
+        errorDisplay.innerText = 'Invalid username or password.';
+        logActivity('Login Failed', `Attempted username: ${usernameInput}`);
     }
-
-    loadComponents();
-  </script>
+}
+// Shows the main content and navigation after successful login
+function showMainContent() {
+    document.getElementById('login-section').style.display = 'none';
+    document.getElementById('main-nav').style.display = 'flex';
+    document.getElementById('userName').value = currentUsername; // Prefill quiz name
+    // Adjust Admin button visibility
+    const historyTab = document.getElementById('tab-admin-history');
+    historyTab.style.display = currentRole === 'admin' ? 'block' : 'none';
+    // Default to the study tab
+    showStudy();
+}
+// Renders the in-session admin log
+function updateAdminSessionLogDisplay() {
+    const logContainer = document.getElementById('activityLogDisplay');
+    if (sessionActivityLog.length === 0) {
+        logContainer.innerHTML = '<p class="small-muted" style="text-align:center;">No in-session activity recorded yet.</p>';
+    } else {
+        logContainer.innerHTML = sessionActivityLog.map(entry => `<div class="log-entry">${entry}</div>`).join('');
+    }
+}
+// Renders the persistent quiz history
+function updateAdminQuizHistoryDisplay() {
+    const historyContainer = document.getElementById('quizHistoryDisplay');
+    const history = getQuizHistory();
+    if (history.length === 0) {
+        historyContainer.innerHTML = '<p class="small-muted" style="text-align:center;">No completed quizzes found in history.</p>';
+    } else {
+        const tableHtml = `
+            <table style="width:100%; border-collapse: collapse; margin-top: 10px;">
+                <thead>
+                    <tr style="background:#f0f4ff; text-align:left;">
+                        <th style="padding: 10px; border: 1px solid #ddd;">Time/Date</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">User</th>
+                        <th style="padding: 10px; border: 1px solid #ddd;">Score</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${history.map(item => `
+                        <tr>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${item.timestamp}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd;">${item.user}</td>
+                            <td style="padding: 10px; border: 1px solid #ddd; font-weight:700;">${item.score}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        historyContainer.innerHTML = tableHtml;
+    }
+}
+/* ============================ MODAL LOGIC (MODIFIED) ============================ */
+// Finds a component by its ID
+function getComponentById(id) {
+    return components.find(c => c.id === id);
+}
+// Helper function to create a detail row
+function createDetailRow(label, content) {
+    if (!content) return '';
+    return `
+        <div class="modal-detail-row">
+            <span class="modal-detail-label">${label}:</span> 
+            <span class="modal-detail-content">${content}</span>
+        </div>
+    `;
+}
+// Shows the modal with component details (Updated to include new fields)
+function showModal(componentId, event) {
+    // Stop propagation if the click originated from the datasheet link
+    if (event.target.classList.contains('datasheet')) {
+        return;
+    }
+    const component = getComponentById(componentId);
+    if (!component) return;
+    const modal = document.getElementById('componentModal');
+    const modalImage = document.getElementById('modalImage');
+    const modalDatasheet = document.getElementById('modalDatasheet');
+    const noDatasheet = document.getElementById('noDatasheet');
+    const modalDetails = document.getElementById('modalDetails');
+    const imgPath = `images/${component.part}.jpg`;
+    // 1. Set Name
+    document.getElementById('modalName').innerText = component.name;
+    // 2. Set Image
+    modalImage.src = imgPath;
+    modalImage.style.display = 'block';
+    modalImage.parentNode.classList.remove('empty');
+    modalImage.onerror = function() {
+        this.style.display = 'none';
+        this.parentNode.classList.add('empty');
+    };
+    // 3. Set Details - Dynamically generate rows for all requested fields
+    let detailsHtml = `
+        ${createDetailRow('Part No', component.part)}
+        ${createDetailRow('Manufacturer', component.manufacturer)}
+        ${createDetailRow('Drawing(s)', component.drawing)}
+        ${createDetailRow('Description', component.desc)}
+        ${createDetailRow('Rating', component.rating)}
+        ${createDetailRow('Specifications', component.specs)}
+        ${createDetailRow('Technical Specs', component.technicalSpecs)}
+        ${createDetailRow('Pin-In Details', component.pinIn)}
+        ${createDetailRow('Pin-Out Details', component.pinOut)}
+        ${createDetailRow('Usage Details', component.usageDetails)}
+        ${createDetailRow('Installation Notes', component.installationNotes)}
+        ${createDetailRow('Safety Warnings', component.safetyWarnings)}
+    `;
+    modalDetails.innerHTML = detailsHtml;
+    // 4. Set Datasheet Link
+    if (component.datasheetLink) {
+        modalDatasheet.href = component.datasheetLink;
+        modalDatasheet.style.display = 'inline-block';
+        noDatasheet.style.display = 'none';
+    } else {
+        modalDatasheet.style.display = 'none';
+        noDatasheet.style.display = 'inline-block';
+    }
+    // 5. Display Modal
+    modal.style.display = 'block';
+    logActivity('View Component Details', `Part: ${component.part}`);
+}
+// Closes the modal (Unchanged)
+function closeModal() {
+    document.getElementById('componentModal').style.display = 'none';
+}
+// Close modal if user clicks outside of it (Unchanged)
+window.onclick = function(event) {
+    const modal = document.getElementById('componentModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+/* ========== Render study grid (Unchanged from previous step) ========== */
+const grid = document.getElementById('componentsGrid');
+function loadStudy(){
+    grid.innerHTML = '';
+    components.forEach(c=>{
+        const imgPath = `images/${c.part}.jpg`;
+        const datasheet = c.datasheetLink ? c.datasheetLink : null;
+        const card = document.createElement('div');
+        // MODIFIED: Added onclick handler to showModal and simplified card content
+        card.className = 'card';
+        card.setAttribute('onclick', `showModal(${c.id}, event)`); 
+        card.innerHTML = `
+            <div class="img-box" data-part="${c.part}">
+                <img src="${imgPath}" alt="${c.part}" onerror="this.style.display='none'; this.parentNode.classList.add('empty')" />
+            </div>
+            <div style="font-weight:700; font-size:1.1rem; margin-top:10px; text-align:center;">${c.name}</div>
+            <div class="datasheet-wrap">
+                ${datasheet ? `<a class="datasheet" href="${datasheet}" target="_blank" rel="noopener" onclick="event.stopPropagation()">View Datasheet</a>` : `<div class="meta" style="margin-top:8px;">No datasheet</div>`}
+            </div>
+        `;
+        grid.appendChild(card);
+    });
+}
+loadStudy(); // Initial load
+function filterStudy(){
+    const q = normalizeText(document.getElementById('searchBox').value);
+    document.querySelectorAll('#componentsGrid .card').forEach(card=>{
+        // Check both the name (inner text) and the part number (stored in data-part)
+        const name = normalizeText(card.querySelector('div:nth-child(2)').innerText);
+        const part = normalizeText(card.querySelector('.img-box').dataset.part);
+        card.style.display = (name.includes(q) || part.includes(q)) ? '' : 'none';
+    });
+    logActivity('Filter Study', `Query: ${q}`);
+}
+/* ============================ QUESTION POOLS (Unchanged) ============================ */
+const IMAGE_QUESTIONS = [ { id:1, part:"SEL751", filename:"SEL751.jpg", accepted:["sel751","sel-751","751","sel 751"], prompt:"Identify this protection relay" }, { id:2, part:"5SY62257CC", filename:"5SY62257CC.jpg", accepted:["5sy62257cc","5sy62257","5sy62257c"], prompt:"Identify this circuit breaker (F1)" }, { id:3, part:"5SY43037CC", filename:"5SY43037CC.jpg", accepted:["5sy43037cc","5sy43037"], prompt:"Identify this 3-phase circuit breaker (F5)" }, { id:4, part:"XB4BS8444", filename:"XB4BS8444.jpg", accepted:["xb4bs8444","xb4 bs8444","xb4"], prompt:"Identify this emergency stop pushbutton" }, { id:5, part:"D7P-LF3PN3GX10", filename:"D7P-LF3PN3GX10.jpeg", accepted:["d7p-lf3pn3gx10","d7plf3pn3gx10","d7plf3"], prompt:"Identify this green indicator" }, { id:6, part:"D7P-P0PN3AX7", filename:"D7P-P0PN3AX7.png", accepted:["d7p-p0pn3ax7","d7pp0pn3","d7p p0pn3"], prompt:"Identify this amber indicator" }, { id:7, part:"D7PP4PN3RXD7", filename:"D7PP4PN3RXD7.jpeg", accepted:["d7pp4pn3rxd7","d7pp4pn3","d7pp4"], prompt:"Identify this red indicator" }, { id:8, part:"D7P-SB32", filename:"D7P-SB32.jpeg", accepted:["d7p-sb32","d7psb32","sb32"], prompt:"Identify this selector switch" }, { id:9, part:"3RH2122-1BB40", filename:"3RH2122-1BB40.jpg", accepted:["3rh2122-1bb40","3rh2122"], prompt:"Identify this contactor relay (K1)" }, { id:10, part:"3RH2131-1BB40", filename:"3RH2131-1BB40.jpg", accepted:["3rh2131-1bb40","3rh2131"], prompt:"Identify this contactor relay (KBE)" } ];
+const MCQ_QUESTIONS = [ { id:11, q:"What is the coil voltage rating for contactor relay K1 (3RH2122-1BB40)?", choices:["110V AC","240V AC","24V DC","48V DC"], correct:2 }, { id:12, q:"What are the coil terminals labeled on Siemens SIRIUS contactors?", choices:["X1 and X2","A1 and A2","L1 and L2","+ and -"], correct:1 }, { id:13, q:"What is the primary function of the SEL-751 Feeder Protection Relay?", choices:["Power metering only","Detect faults like short circuits and overloads","Temperature monitoring","Voltage regulation"], correct:1 }, { id:14, q:"What does 'C' curve mean for MCBs?", choices:["Commercial grade protection","Current limiting feature","General applications (5-10× In trip range)","Calibrated for capacitive loads"], correct:2 }, { id:15, q:"Typical mounting diameter for panel selectors/indicators?", choices:["16 mm","22 mm (or 22.5 mm)","30 mm","40 mm"], correct:1 }, { id:16, q:"What type of contact does the Emergency Stop button normally use?", choices:["Normally Open (NO)","Normally Closed (NC)","Changeover (CO)","Latching type"], correct:1 }, { id:17, q:"How many positions does D7P-SB32 have?", choices:["2 positions","3 positions","4 positions","Variable"], correct:1 }, { id:18, q:"What contact configuration is 3RH2122-1BB40 (K1)?", choices:["2NO + 2NC","3NO + 1NC","4NO + 0NC","1NO + 3NC"], correct:0 }, { id:19, q:"Typical use of Local/Remote selector switch?", choices:["Selecting voltage levels","Local push-button vs remote PLC","Emergency shutdown","Phase selection"], correct:1 }, { id:20, q:"Breaking capacity of 5SY62257CC (typical) ?", choices:["3 kA","6 kA","10 kA","16 kA"], correct:1 } ];
+const IMAGE_CHOICE_QUESTIONS = [ { id:21, part:"5SY62257CC", choices:["5SY62257CC.jpg","5ST3010.jpg","5SY43037CC.jpg","XB4BS8444.jpg"], correctIndex:0 }, { id:22, part:"5ST3010", choices:["5SY62257CC.jpg","5ST3010.jpg","XB4BS8444.jpg","D7PP4PN3RXD7.jpeg"], correctIndex:1 }, { id:23, part:"5SY43037CC", choices:["5ST3010.jpg","D7P-LF3PN3GX10.jpeg","5SY43037CC.jpg","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:24, part:"XB4BS8444", choices:["XB4BS8444.jpg","D7PP4PN3RXD7.jpeg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg"], correctIndex:0 }, { id:25, part:"D7P-LF3PN3GX10", choices:["D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","5SY62257CC.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:26, part:"D7P-P0PN3AX7", choices:["D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:27, part:"D7PP4PN3RXD7", choices:["3RH2131-1BB40.jpg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:3 }, { id:28, part:"D7P-SB32", choices:["D7P-P0PN3AX7.png","D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","3RH2131-1BB40.jpg"], correctIndex:1 }, { id:29, part:"3RH2122-1BB40", choices:["3RH2122-1BB40.jpg","D7P-SB32.jpeg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:30, part:"3RH2131-1BB40", choices:["5SY62257CC.jpg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg","XB4BS8444.jpg"], correctIndex:2 } ];
+/* ======= helpers to normalize user text answers (Unchanged) ======= */
+function normalizeText(s){ if(!s) return ""; return s.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[-_]/g,''); }
+/* ========== Tab switching (Unchanged) ========== */
+document.getElementById('tab-study').addEventListener('click', ()=>{ showStudy(); });
+document.getElementById('tab-quiz').addEventListener('click', ()=>{ showQuizTab(); });
+document.getElementById('tab-admin-history').addEventListener('click', ()=>{ showAdminHistory(); });
+function hideAllSections() {
+    document.getElementById('study-section').style.display='none';
+    document.getElementById('quiz-section').style.display='none';
+    document.getElementById('admin-history-section').style.display='none';
+    document.querySelectorAll('#main-nav button').forEach(btn => btn.classList.remove('active'));
+}
+function showStudy(){
+    hideAllSections();
+    document.getElementById('study-section').style.display='block';
+    document.getElementById('tab-study').classList.add('active');
+    logActivity('View Tab', 'Study Components');
+}
+function showQuizTab(){
+    hideAllSections();
+    document.getElementById('quiz-section').style.display='block';
+    document.getElementById('tab-quiz').classList.add('active');
+    logActivity('View Tab', 'Take Quiz');
+}
+function showAdminHistory(){
+    hideAllSections();
+    if (currentRole === 'admin') {
+        updateAdminQuizHistoryDisplay(); // Load persistent history
+        updateAdminSessionLogDisplay(); // Load session log
+        document.getElementById('admin-history-section').style.display='block';
+        document.getElementById('tab-admin-history').classList.add('active');
+        logActivity('View Tab', 'Admin History');
+    } else {
+        alert('Access Denied. Only Admin users can view the history log.');
+        showStudy(); // Redirect non-admins
+    }
+}
+/* ========== QUIZ LOGIC (Unchanged) ========== */
+let quizPool = [];
+let currentIndex = 0;
+let totalScore = 0;
+let player = '';
+const totalQuestions = 30; // Defined total questions
+function shuffleArray(a){
+    for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] }
+    return a;
+}
+function buildQuiz(){
+    const poolA = IMAGE_QUESTIONS.slice(0,10).map(q=> ({type:'image-id', ...q}) );
+    const poolB = MCQ_QUESTIONS.slice(0,10).map(q=> ({type:'mcq', ...q}) );
+    const poolC = IMAGE_CHOICE_QUESTIONS.slice(0,10).map(q=> ({type:'image-choice', ...q}) );
+    quizPool = shuffleArray([...poolA, ...poolB, ...poolC]);
+}
+function initQuiz(){
+    player = document.getElementById('userName').value.trim() || currentUsername;
+    if(!player){
+        alert('Please enter your name');
+        return;
+    }
+    document.getElementById('playerName').innerText = player;
+    document.getElementById('quizStart').style.display='none';
+    document.getElementById('quizArea').style.display='block';
+    document.getElementById('quizEnd').style.display='none';
+    buildQuiz();
+    currentIndex = 0;
+    totalScore = 0;
+    document.getElementById('liveScore').innerText = totalScore;
+    document.getElementById('qTotal').innerText = totalQuestions;
+    showQuestion();
+    logActivity('Quiz Started', `Quiz taker: ${player}`);
+}
+function showQuestion(){
+    const container = document.getElementById('questionContainer');
+    container.innerHTML = '';
+    const q = quizPool[currentIndex];
+    document.getElementById('qIndex').innerText = currentIndex + 1;
+    const prog = Math.round(((currentIndex)/totalQuestions)*100);
+    document.getElementById('progFill').style.width = prog + '%';
+    if(q.type === 'image-id'){
+        container.innerHTML = `<div class="question-image"><img id="qimg" src="images/${q.filename}" alt="${q.part}" onerror="this.style.display='none'; this.parentNode.classList.add('empty')" /></div> <div class="q-text">${q.prompt || 'Identify this component'}</div> <div style="margin-top:12px"><input id="textAnswer" class="text-answer" placeholder="Type exact part number (e.g. ${q.part})" /></div> <div style="margin-top:12px" id="textSubmitWrap"><button class="btn" onclick="submitTextAnswer()">Submit</button></div>`;
+        document.getElementById('textAnswer').addEventListener('keydown', e=>{ if(e.key==='Enter') submitTextAnswer(); });
+        document.getElementById('textAnswer').focus();
+    } else if(q.type === 'mcq'){
+        container.innerHTML = `<div class="question-image empty" style="height:120px;display:flex;align-items:center;justify-content:center"><div class="small-muted">MCQ</div></div> <div class="q-text">${q.q}</div> <div class="options">${q.choices.map((c,idx)=> `<div class="option" data-idx="${idx}" onclick="submitMcq(this,${idx})"><div style="font-weight:700">Option ${String.fromCharCode(65+idx)}</div><div class="small-muted">${c}</div></div>`).join('')}</div>`;
+    } else if(q.type === 'image-choice'){
+        container.innerHTML = `<div class="question-image"><img id="qimg" src="images/${q.choices[0]}" alt="" onerror="this.style.display='none'; this.parentNode.classList.add('empty')" /></div> <div class="q-text">Select the correct image for <strong>${q.part}</strong></div> <div class="options" style="grid-template-columns:repeat(2,1fr)">${q.choices.map((f,idx)=> `<div class="option" data-idx="${idx}" onclick="submitImageChoice(this,${idx})"> <img src="images/${f}" alt="${f}" onerror="this.style.display='none'; this.parentNode.classList.add('empty')" /> <div class="small-muted">${f.replace(/\.(jpg|jpeg|png)$/i,'')}</div> </div> `).join('')}</div>`;
+    }
+}
+function submitTextAnswer(){
+    const q = quizPool[currentIndex];
+    const input = document.getElementById('textAnswer');
+    const val = normalizeText(input.value);
+    let correct = false;
+    for(const acc of (q.accepted || [])){
+        if(normalizeText(acc) === val || val.includes(normalizeText(acc))){
+            correct = true;
+            break;
+        }
+    }
+    if(correct){
+        input.style.boxShadow = '0 0 0 4px rgba(46,168,79,0.12)';
+        input.style.borderColor = 'var(--ok)';
+        totalScore++;
+    } else {
+        input.style.boxShadow = '0 0 0 4px rgba(214,65,69,0.12)';
+        input.style.borderColor = 'var(--bad)';
+    }
+    document.getElementById('liveScore').innerText = totalScore;
+    document.querySelector('#textSubmitWrap button').disabled = true;
+    input.disabled = true;
+    setTimeout(()=>{ advanceQuestion(); }, 900);
+}
+function submitMcq(el, idx){
+    const q = quizPool[currentIndex];
+    const options = document.querySelectorAll('.option');
+    options.forEach(o=> o.style.pointerEvents='none');
+    if(idx === q.correct){
+        el.classList.add('correct');
+        totalScore++;
+    } else {
+        el.classList.add('incorrect');
+        options.forEach(o=>{ if(Number(o.dataset.idx) === q.correct) o.classList.add('correct'); });
+    }
+    document.getElementById('liveScore').innerText = totalScore;
+    setTimeout(()=>{ advanceQuestion(); }, 900);
+}
+function submitImageChoice(el, idx){
+    const q = quizPool[currentIndex];
+    const options = document.querySelectorAll('.option');
+    options.forEach(o=> o.style.pointerEvents='none');
+    if(idx === q.correctIndex){
+        el.classList.add('correct');
+        totalScore++;
+    } else {
+        el.classList.add('incorrect');
+        options.forEach(o=>{ if(Number(o.dataset.idx) === q.correctIndex) o.classList.add('correct'); });
+    }
+    document.getElementById('liveScore').innerText = totalScore;
+    setTimeout(()=>{ advanceQuestion(); }, 900);
+}
+function advanceQuestion(){
+    currentIndex++;
+    if(currentIndex >= quizPool.length){
+        endQuiz();
+    } else {
+        showQuestion();
+    }
+}
+function endQuiz(){
+    document.getElementById('quizArea').style.display='none';
+    document.getElementById('quizEnd').style.display='block';
+    document.getElementById('finalResult').innerText = `${player}, your score is ${totalScore}/${totalQuestions}`;
+    document.getElementById('progFill').style.width = '100%';
+    // *** Save result to localStorage ***
+    saveQuizResult(player, totalScore, totalQuestions);
+    logActivity('Quiz Ended', `Score: ${totalScore}/${totalQuestions}. Quiz taker: ${player}`);
+}
+function restartQuiz(){
+    document.getElementById('quizEnd').style.display='none';
+    document.getElementById('quizArea').style.display='none';
+    document.getElementById('quizStart').style.display='block';
+    document.getElementById('playerName').innerText = '';
+    document.getElementById('liveScore').innerText = '0';
+    document.getElementById('progFill').style.width = '0%';
+    logActivity('Quiz Restarted', `User clicked Try Again.`);
+}
+/* initialize view: show login */
+document.getElementById('login-section').style.display = 'block';
+document.getElementById('main-nav').style.display = 'none';
+</script>
 </body>
 </html>
