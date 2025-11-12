@@ -15,20 +15,22 @@ header{
     /* --- NEW FLEX ALIGNMENT --- */
     display: flex;
     flex-direction: column; /* Stack children vertically */
-    align-items: flex-start; /* Align all content to the far left */
+    align-items: flex-start; /* Align all content to the left initially */
     gap: 5px; /* Reduced gap */
-    text-align: left; /* Ensure h1 and div text is left-aligned */
+    text-align: center; /* Center text within the header */
+    width: 100%; /* Ensure header takes full width for centering text */
 }
 .header-logo {
     /* Logo size increased to 60px */
     height: 60px; 
     border-radius: 5px;
     margin-bottom: 5px; /* Space between logo and h1 */
+    align-self: flex-start; /* Explicitly align logo to the start (left) */
 }
-header h1{
-    margin:0;
-    font-size:20px; 
-    margin-top: 5px; /* Smaller margin below logo */
+header h1,
+header .small-muted {
+    width: 100%; /* Make text elements span full header width for centering effect */
+    text-align: center; /* Center the text inside these elements */
 }
 nav{display:flex;gap:8px;justify-content:center;padding:12px;background:#eef2ff}
 nav button{border:0;background:white;padding:10px 14px;border-radius:8px;cursor:pointer;font-weight:700}
@@ -454,7 +456,7 @@ const components = [
         safetyWarnings: "Use only the specified LED voltage to prevent burnout."
     },
     { 
-        id:14, name:"Amber Indicator (push-to-test)", part:"D7P-P0PN3AX7", drawing:"0003,0006,0009", desc:"Sprecher+Schuh amber push-to-test indicator", datasheetLink: "https://www.nhp.com.au/-/media/Project/NHP/Sites/Shared/Resources/Catalogues/Files/D7-Pushbuttons--Operator-Control-Devices.pdf",
+        id:14, name:"Amber Indicator (push-to-test)", part:"D7P-P0PN3AX7", drawing:"0003,0006,0009", desc:"Sprecher+Schuh amber push-to-test indicator", datasheetLink: "https://www.nhpnz.co.nz/public/assets/pim/Original/10044/D7PP0PN3AX7-NZ-Pushbutton-22.5mm-Datasheet.pdf",
         rating: "LED Supply: 24V AC/DC",
         manufacturer: "Sprecher+Schuh",
         specs: "22.5 mm, Amber (Yellow) lens, Push-to-test.",
@@ -896,7 +898,7 @@ function filterStudy(){
 /* ============================ QUESTION POOLS (Unchanged) ============================ */
 const IMAGE_QUESTIONS = [ { id:1, part:"SEL751", filename:"SEL751.jpg", accepted:["sel751","sel-751","751","sel 751"], prompt:"Identify this protection relay" }, { id:2, part:"5SY62257CC", filename:"5SY62257CC.jpg", accepted:["5sy62257cc","5sy62257","5sy62257c"], prompt:"Identify this circuit breaker (F1)" }, { id:3, part:"5SY43037CC", filename:"5SY43037CC.jpg", accepted:["5sy43037cc","5sy43037"], prompt:"Identify this 3-phase circuit breaker (F5)" }, { id:4, part:"XB4BS8444", filename:"XB4BS8444.jpg", accepted:["xb4bs8444","xb4 bs8444","xb4"], prompt:"Identify this emergency stop pushbutton" }, { id:5, part:"D7P-LF3PN3GX10", filename:"D7P-LF3PN3GX10.jpeg", accepted:["d7p-lf3pn3gx10","d7plf3pn3gx10","d7plf3"], prompt:"Identify this green indicator" }, { id:6, part:"D7P-P0PN3AX7", filename:"D7P-P0PN3AX7.png", accepted:["d7p-p0pn3ax7","d7pp0pn3","d7p p0pn3"], prompt:"Identify this amber indicator" }, { id:7, part:"D7PP4PN3RXD7", filename:"D7PP4PN3RXD7.jpeg", accepted:["d7pp4pn3rxd7","d7pp4pn3","d7pp4"], prompt:"Identify this red indicator" }, { id:8, part:"D7P-SB32", filename:"D7P-SB32.jpeg", accepted:["d7p-sb32","d7psb32","sb32"], prompt:"Identify this selector switch" }, { id:9, part:"3RH2122-1BB40", filename:"3RH2122-1BB40.jpg", accepted:["3rh2122-1bb40","3rh2122"], prompt:"Identify this contactor relay (K1)" }, { id:10, part:"3RH2131-1BB40", filename:"3RH2131-1BB40.jpg", accepted:["3rh2131-1bb40","3rh2131"], prompt:"Identify this contactor relay (KBE)" } ];
 const MCQ_QUESTIONS = [ { id:11, q:"What is the coil voltage rating for contactor relay K1 (3RH2122-1BB40)?", choices:["110V AC","240V AC","24V DC","48V DC"], correct:2 }, { id:12, q:"What are the coil terminals labeled on Siemens SIRIUS contactors?", choices:["X1 and X2","A1 and A2","L1 and L2","+ and -"], correct:1 }, { id:13, q:"What is the primary function of the SEL-751 Feeder Protection Relay?", choices:["Power metering only","Detect faults like short circuits and overloads","Temperature monitoring","Voltage regulation"], correct:1 }, { id:14, q:"What does 'C' curve mean for MCBs?", choices:["Commercial grade protection","Current limiting feature","General applications (5-10× In trip range)","Calibrated for capacitive loads"], correct:2 }, { id:15, q:"Typical mounting diameter for panel selectors/indicators?", choices:["16 mm","22 mm (or 22.5 mm)","30 mm","40 mm"], correct:1 }, { id:16, q:"What type of contact does the Emergency Stop button normally use?", choices:["Normally Open (NO)","Normally Closed (NC)","Changeover (CO)","Latching type"], correct:1 }, { id:17, q:"How many positions does D7P-SB32 have?", choices:["2 positions","3 positions","4 positions","Variable"], correct:1 }, { id:18, q:"What contact configuration is 3RH2122-1BB40 (K1)?", choices:["2NO + 2NC","3NO + 1NC","4NO + 0NC","1NO + 3NC"], correct:0 }, { id:19, q:"Typical use of Local/Remote selector switch?", choices:["Selecting voltage levels","Local push-button vs remote PLC","Emergency shutdown","Phase selection"], correct:1 }, { id:20, q:"Breaking capacity of 5SY62257CC (typical) ?", choices:["3 kA","6 kA","10 kA","16 kA"], correct:1 } ];
-const IMAGE_CHOICE_QUESTIONS = [ { id:21, part:"5SY62257CC", choices:["5SY62257CC.jpg","5ST3010.jpg","5SY43037CC.jpg","XB4BS8444.jpg"], correctIndex:0 }, { id:22, part:"5ST3010", choices:["5SY62257CC.jpg","5ST3010.jpg","XB4BS8444.jpg","D7PP4PN3RXD7.jpeg"], correctIndex:1 }, { id:23, part:"5SY43037CC", choices:["5ST3010.jpg","D7P-LF3PN3GX10.jpeg","5SY43037CC.jpg","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:24, part:"XB4BS8444", choices:["XB4BS8444.jpg","D7PP4PN3RXD7.jpeg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg"], correctIndex:0 }, { id:25, part:"D7P-LF3PN3GX10", choices:["D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","5SY62257CC.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:26, part:"D7P-P0PN3AX7", choices:["D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:27, part:"D7PP4PN3RXD7", choices:["3RH2131-1BB40.jpg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:3 }, { id:28, part:"D7P-SB32", choices:["D7P-P0PN3AX7.png","D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","3RH2131-1BB40.jpg"], correctIndex:1 }, { id:29, part:"3RH2122-1BB40", choices:["3RH2122-1BB40.jpg","D7P-SB32.jpeg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:30, part:"3RH2131-1BB40", choices:["5SY62257CC.jpg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg","XB4BS8444.jpg"], correctIndex:2 } ];
+const IMAGE_CHOICE_QUESTIONS = [ { id:21, part:"5SY62257CC", choices:["5SY62257CC.jpg","5ST3010.jpg","5SY43037CC.jpg","XB4BS8444.jpg"], correctIndex:0 }, { id:22, part:"5ST3010", choices:["5SY62257CC.jpg","5ST3010.jpg","5SY43037CC.jpg","XB4BS8444.jpg"], correctIndex:1 }, { id:23, part:"5SY43037CC", choices:["5ST3010.jpg","D7P-LF3PN3GX10.jpeg","5SY43037CC.jpg","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:24, part:"XB4BS8444", choices:["XB4BS8444.jpg","D7PP4PN3RXD7.jpeg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg"], correctIndex:0 }, { id:25, part:"D7P-LF3PN3GX10", choices:["D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","5SY62257CC.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:26, part:"D7P-P0PN3AX7", choices:["D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:2 }, { id:27, part:"D7PP4PN3RXD7", choices:["3RH2131-1BB40.jpg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png","D7PP4PN3RXD7.jpeg"], correctIndex:3 }, { id:28, part:"D7P-SB32", choices:["D7P-P0PN3AX7.png","D7P-SB32.jpeg","D7P-LF3PN3GX10.jpeg","3RH2131-1BB40.jpg"], correctIndex:1 }, { id:29, part:"3RH2122-1BB40", choices:["3RH2122-1BB40.jpg","D7P-SB32.jpeg","3RH2131-1BB40.jpg","D7P-P0PN3AX7.png"], correctIndex:0 }, { id:30, part:"3RH2131-1BB40", choices:["5SY62257CC.jpg","3RH2122-1BB40.jpg","3RH2131-1BB40.jpg","XB4BS8444.jpg"], correctIndex:2 } ];
 /* ======= helpers to normalize user text answers (Unchanged) ======= */
 function normalizeText(s){ if(!s) return ""; return s.toString().trim().toLowerCase().replace(/\s+/g,'').replace(/[-_]/g,''); }
 /* ========== Tab switching (Unchanged) ========== */
